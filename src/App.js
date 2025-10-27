@@ -317,7 +317,7 @@ const ScheduleManager = () => {
           <div className="header-title-section">
             <div className="title-with-logo">
               <img src="https://github.com/user-attachments/assets/eb89119c-7b4f-4b2e-81e4-e3d6e48308df" alt="Logo" className="logo" />
-              <h1>Gestionnaire des horaires</h1>
+              <h1>Gestionnaire des horaires du Golf Le Marthelinois</h1>
             </div>
             <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
               {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
