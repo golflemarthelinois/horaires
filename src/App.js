@@ -239,21 +239,70 @@ const ScheduleManager = () => {
   };
 
   const exportSchedule = (dept) => {
-    let content = `Horaire - ${dept}\nSemaine du ${getWeekString()}\n\n`;
+    // Créer une nouvelle fenêtre pour l'export PDF
+    const printWindow = window.open('', '', 'width=1200,height=800');
+    let html = `<html><head><title>Horaire - ${dept}</title><style>
+      @page { size: landscape; margin: 1cm; }
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px;
+        margin: 0;
+      }
+      h1 { 
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      h2 { 
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #666;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 20px; 
+      }
+      th, td { 
+        border: 1px solid #ddd; 
+        padding: 8px; 
+        text-align: center; 
+      }
+      th { 
+        background-color: #4B5563; 
+        color: white; 
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      @media print {
+        @page { size: landscape; }
+      }
+    </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
+    
     weekDays.forEach((day, idx) => {
-      content += `${dayNames[idx]} ${formatDate(day)}\n`;
-      (employees[dept] || []).forEach(emp => {
-        const sched = getSchedule(dept, emp, day);
-        content += `${emp}: ${sched.start} - ${sched.end}\n`;
-      });
-      content += '\n';
+      html += `<th>${dayNames[idx]}<br/>${formatDate(day)}</th>`;
     });
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `horaire-${dept}-${getWeekString()}.txt`;
-    a.click();
+    html += '</tr>';
+    
+    (employees[dept] || []).forEach(emp => {
+      html += `<tr><td><strong>${emp}</strong></td>`;
+      weekDays.forEach(day => {
+        const sched = getSchedule(dept, emp, day);
+        html += `<td>${sched.start} - ${sched.end}</td>`;
+      });
+      html += '</tr>';
+    });
+    
+    html += '</table></body></html>';
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    // Attendre que la page soit chargée puis lancer l'impression (qui permet de sauvegarder en PDF)
+    printWindow.onload = function() {
+      printWindow.print();
+    };
   };
 
   const printSchedule = (dept) => {
