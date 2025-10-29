@@ -14,7 +14,7 @@ const ScheduleManager = () => {
   ];
 
   const timeSlots = [
-    '--',
+    '--h--',
     'N/D',
     '00:00', '00:30', '01:00', '01:30', '02:00', '02:30',
     '03:00', '03:30', '04:00', '04:30', '05:00', '05:30',
@@ -42,6 +42,7 @@ const ScheduleManager = () => {
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [showCopyConfirm, setShowCopyConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [copiedSchedule, setCopiedSchedule] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -210,9 +211,23 @@ const ScheduleManager = () => {
     await saveSchedule(key, newSchedules[key]);
   };
 
+  const copySchedule = (dept, employee, day) => {
+    const sched = getSchedule(dept, employee, day);
+    setCopiedSchedule({ start: sched.start, end: sched.end });
+  };
+
+  const pasteSchedule = async (dept, employee, day) => {
+    if (copiedSchedule) {
+      const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+      const newSchedules = { ...schedules, [key]: copiedSchedule };
+      setSchedules(newSchedules);
+      await saveSchedule(key, copiedSchedule);
+    }
+  };
+
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    return schedules[key] || { start: '--', end: '--' };
+    return schedules[key] || { start: '--h--', end: '--h--' };
   };
 
   const copyWeekToNext = async () => {
@@ -405,6 +420,12 @@ const ScheduleManager = () => {
         <div className="header-card">
           <div className="header-title-section">
             <h1>Gestionnaire des horaires - Golf Le Marthelinois</h1>
+            {copiedSchedule && isAdmin && (
+              <div className="copied-indicator">
+                📋 Horaire copié : {copiedSchedule.start} - {copiedSchedule.end}
+                <button onClick={() => setCopiedSchedule(null)} className="clear-copy-btn">✕</button>
+              </div>
+            )}
             <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
               {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
             </button>
@@ -488,13 +509,33 @@ const ScheduleManager = () => {
                         return (
                           <td key={dayIdx} className="schedule-cell">
                             {isAdmin ? (
-                              <div className="time-selects">
-                                <select value={sched.start} onChange={(e) => updateSchedule(dept, emp, day, 'start', e.target.value)} className="time-select">
-                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
-                                </select>
-                                <select value={sched.end} onChange={(e) => updateSchedule(dept, emp, day, 'end', e.target.value)} className="time-select">
-                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
-                                </select>
+                              <div className="time-selects-container">
+                                <div className="time-selects">
+                                  <select value={sched.start} onChange={(e) => updateSchedule(dept, emp, day, 'start', e.target.value)} className="time-select">
+                                    {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                  </select>
+                                  <select value={sched.end} onChange={(e) => updateSchedule(dept, emp, day, 'end', e.target.value)} className="time-select">
+                                    {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                  </select>
+                                </div>
+                                <div className="copy-paste-buttons">
+                                  <button 
+                                    onClick={() => copySchedule(dept, emp, day)} 
+                                    className="copy-btn"
+                                    title="Copier cet horaire"
+                                  >
+                                    📋
+                                  </button>
+                                  {copiedSchedule && (
+                                    <button 
+                                      onClick={() => pasteSchedule(dept, emp, day)} 
+                                      className="paste-btn"
+                                      title="Coller l'horaire copié"
+                                    >
+                                      📄
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             ) : (
                               <div className="time-display">{sched.start} - {sched.end}</div>
