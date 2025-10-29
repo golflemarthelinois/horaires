@@ -1,640 +1,668 @@
-/* Copiez ce fichier dans src/App.css */
-
-.app-container {
-  min-height: 100vh;
-  background: #f3f4f6;
-  padding: 16px;
-}
-
-.main-content {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.header-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 24px;
-  margin-bottom: 16px;
-}
-
-.header-title-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-bottom: 24px;
-  gap: 16px;
-}
-
-.header-title-section h1 {
-  font-size: 30px;
-  font-weight: bold;
-  color: #1f2937;
-  margin: 0;
-  text-align: center;
-}
-
-.admin-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-  color: white;
-}
-
-.admin-login {
-  background: #3b82f6;
-}
-
-.admin-login:hover {
-  background: #2563eb;
-}
-
-.admin-logout {
-  background: #ef4444;
-}
-
-.admin-logout:hover {
-  background: #dc2626;
-}
-
-.nav-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.nav-buttons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #e5e7eb;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.nav-btn:hover {
-  background: #d1d5db;
-}
-
-.btn-today {
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-today:hover {
-  background: #2563eb;
-}
-
-.btn-calendar {
-  padding: 8px;
-  background: #a855f7;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-calendar:hover {
-  background: #9333ea;
-}
-
-.week-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #374151;
-  margin: 0;
-}
-
-.export-container {
-  position: relative;
-}
-
-.btn-export {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-export:hover {
-  background: #059669;
-}
-
-.export-menu {
-  position: absolute;
-  right: 0;
-  top: 48px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  z-index: 10;
-  min-width: 200px;
-}
-
-.export-dept {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.export-dept:last-child {
-  border-bottom: none;
-}
-
-.export-dept-title {
-  padding: 8px 16px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.export-actions {
-  display: flex;
-}
-
-.export-action-btn {
-  flex: 1;
-  padding: 8px 16px;
-  background: white;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-}
-
-.export-action-btn:hover {
-  background: #f3f4f6;
-}
-
-.dept-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid #e5e7eb;
-  align-items: center;
-}
-
-.filter-label {
-  font-weight: 600;
-  color: #374151;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.filter-btn:hover {
-  background: #d1d5db;
-}
-
-.filter-btn.active {
-  background: #3b82f6;
-  color: white;
-}
-
-.dept-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 24px;
-  margin-bottom: 16px;
-}
-
-.dept-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.dept-header h3 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #1f2937;
-  margin: 0;
-}
-
-.btn-add-emp {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #10b981;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-add-emp:hover {
-  background: #059669;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-.schedule-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.schedule-table thead tr {
-  background: #e5e7eb;
-}
-
-.schedule-table th {
-  padding: 12px;
-  text-align: left;
-  font-weight: 600;
-  text-align: center;
-}
-
-.schedule-table th:first-child {
-  text-align: left;
-}
-
-.date-small {
-  font-size: 12px;
-  font-weight: normal;
-}
-
-.schedule-table tbody tr {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.schedule-table tbody tr:hover {
-  background: #f9fafb;
-}
-
-.schedule-table td {
-  padding: 8px;
-}
-
-.emp-name {
-  font-weight: 500;
-}
-
-.schedule-cell {
-  text-align: center;
-}
-
-.time-selects-container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-}
-
-.time-selects {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 100%;
-}
-
-.copy-paste-buttons {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-}
-
-.copy-btn,
-.paste-btn {
-  padding: 4px 8px;
-  border: 1px solid #d1d5db;
-  background: white;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.copy-btn:hover {
-  background: #e0f2fe;
-  border-color: #3b82f6;
-}
-
-.paste-btn:hover {
-  background: #dcfce7;
-  border-color: #10b981;
-}
-
-.copied-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #dcfce7;
-  border: 1px solid #10b981;
-  border-radius: 8px;
-  color: #065f46;
-  font-weight: 600;
-  font-size: 14px;
-}
-
-.clear-copy-btn {
-  padding: 2px 8px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.2s;
-}
-
-.clear-copy-btn:hover {
-  background: #dc2626;
-}
-
-.time-select {
-  font-size: 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  padding: 4px 8px;
-}
-
-.time-display {
-  text-align: center;
-  font-size: 14px;
-}
-
-.btn-delete {
-  padding: 8px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-delete:hover {
-  background: #dc2626;
-}
-
-.copy-section {
-  margin-top: 16px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.btn-copy {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #a855f7;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-copy:hover {
-  background: #9333ea;
-}
-
-/* Modals */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  max-width: 448px;
-  width: 100%;
-  margin: 16px;
-}
-
-.modal h3 {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0 0 16px 0;
-}
-
-.modal-subtitle {
-  margin-bottom: 8px;
-  font-weight: 600;
-}
-
-.modal-input {
-  width: 100%;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 16px;
-  margin-bottom: 16px;
-  font-size: 16px;
-}
-
-.modal-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.modal-btn {
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.2s;
-}
-
-.modal-btn.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.modal-btn.primary:hover {
-  background: #2563eb;
-}
-
-.modal-btn.secondary {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.modal-btn.secondary:hover {
-  background: #d1d5db;
-}
-
-.modal-btn.danger {
-  background: #ef4444;
-  color: white;
-}
-
-.modal-btn.danger:hover {
-  background: #dc2626;
-}
-
-.modal-btn.success {
-  background: #10b981;
-  color: white;
-}
-
-.modal-btn.success:hover {
-  background: #059669;
-}
-
-.delete-title {
-  color: #ef4444;
-}
-
-.success-title {
-  color: #10b981;
-}
-
-/* Calendar */
-.calendar-modal {
-  max-width: 448px;
-}
-
-.calendar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.calendar-nav-btn {
-  padding: 8px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.calendar-nav-btn:hover {
-  background: #f3f4f6;
-}
-
-.calendar-days-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.calendar-days-header div {
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 8px;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.calendar-day {
-  padding: 8px;
-  font-size: 14px;
-  border: none;
-  background: white;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.calendar-day:hover {
-  background: #e5e7eb;
-}
-
-.calendar-day.other-month {
-  color: #9ca3af;
-}
-
-.calendar-day.today {
-  background: #dbeafe;
-  font-weight: bold;
-}
-
-.calendar-day.selected {
-  background: #a855f7;
-  color: white;
-  font-weight: bold;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .header-title-section {
-    flex-direction: column;
+// Copiez ce fichier dans src/App.js
+import React, { useState, useEffect } from 'react';
+import { Calendar, ChevronLeft, ChevronRight, Download, Printer, Lock, Unlock, Plus, Trash2 } from 'lucide-react';
+import { db } from './firebaseConfig';
+import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
+import './App.css';
+
+const ScheduleManager = () => {
+  const departments = [
+    'Proposé à l\'accueil',
+    'Proposé aux départs', 
+    'Proposé au terrain',
+    'Proposé aux carts'
+  ];
+
+  const timeSlots = [
+    '--h--',
+    'N/D',
+    '00:00', '00:30', '01:00', '01:30', '02:00', '02:30',
+    '03:00', '03:30', '04:00', '04:30', '05:00', '05:30',
+    '06:00', '06:30', '07:00', '07:30', '08:00', '08:30',
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+    '21:00', '21:30', '22:00', '22:30', '23:00', '23:30'
+  ];
+
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [password, setPassword] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [employees, setEmployees] = useState({});
+  const [schedules, setSchedules] = useState({});
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [newEmployeeName, setNewEmployeeName] = useState('');
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [visibleDepartment, setVisibleDepartment] = useState('Tous');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [copiedSchedule, setCopiedSchedule] = useState(null);
+  const [selectedCell, setSelectedCell] = useState(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    // Gérer les raccourcis clavier Ctrl+C / Ctrl+V (ou Cmd+C / Cmd+V sur Mac)
+    const handleKeyDown = (e) => {
+      if (!isAdmin) return;
+
+      const isCopy = (e.ctrlKey || e.metaKey) && e.key === 'c';
+      const isPaste = (e.ctrlKey || e.metaKey) && e.key === 'v';
+
+      if (isCopy && selectedCell) {
+        e.preventDefault();
+        const sched = getSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
+        setCopiedSchedule({ start: sched.start, end: sched.end });
+      }
+
+      if (isPaste && selectedCell && copiedSchedule) {
+        e.preventDefault();
+        pasteSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdmin, selectedCell, copiedSchedule, schedules]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Charger les employés
+      const employeesSnap = await getDocs(collection(db, 'employees'));
+      const loadedEmployees = {};
+      
+      if (employeesSnap.empty) {
+        // Données par défaut si la base est vide - initialiser Firebase
+        loadedEmployees['Proposé à l\'accueil'] = ['Jean Dupont', 'Marie Tremblay'];
+        loadedEmployees['Proposé aux départs'] = ['Pierre Lavoie', 'Sophie Martin'];
+        loadedEmployees['Proposé au terrain'] = ['Luc Gagnon', 'Anne Roy'];
+        loadedEmployees['Proposé aux carts'] = ['Marc Côté', 'Julie Boucher'];
+        
+        // Sauvegarder les données par défaut dans Firebase
+        for (const [dept, empList] of Object.entries(loadedEmployees)) {
+          await setDoc(doc(db, 'employees', dept), { list: empList });
+        }
+      } else {
+        employeesSnap.forEach(docSnap => {
+          loadedEmployees[docSnap.id] = docSnap.data().list || [];
+        });
+      }
+      setEmployees(loadedEmployees);
+
+      // Charger les horaires
+      const schedulesSnap = await getDocs(collection(db, 'schedules'));
+      const loadedSchedules = {};
+      schedulesSnap.forEach(docSnap => {
+        loadedSchedules[docSnap.id] = docSnap.data();
+      });
+      setSchedules(loadedSchedules);
+      setLoading(false);
+    } catch (error) {
+      console.error('Erreur de chargement:', error);
+      setLoading(false);
+      alert('Erreur de connexion à Firebase. Vérifiez votre configuration dans firebaseConfig.js');
+    }
+  };
+
+  const saveEmployees = async (newEmployees) => {
+    try {
+      for (const [dept, empList] of Object.entries(newEmployees)) {
+        await setDoc(doc(db, 'employees', dept), { list: empList });
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const saveSchedule = async (key, scheduleData) => {
+    try {
+      await setDoc(doc(db, 'schedules', key), scheduleData);
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const saveAllSchedules = async (newSchedules) => {
+    try {
+      for (const [key, schedule] of Object.entries(newSchedules)) {
+        await setDoc(doc(db, 'schedules', key), schedule);
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+    }
+  };
+
+  const getWeekDays = (date) => {
+    const sunday = new Date(date);
+    sunday.setDate(date.getDate() - date.getDay());
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(sunday);
+      day.setDate(sunday.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const weekDays = getWeekDays(currentDate);
+  const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+  const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+  const formatDate = (date) => `${date.getDate()} ${monthNames[date.getMonth()]}`;
+
+  const getWeekString = () => {
+    const sunday = weekDays[0];
+    const saturday = weekDays[6];
+    return `${formatDate(sunday)} - ${formatDate(saturday)}`;
+  };
+
+  const goToPreviousWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() - 7);
+    setCurrentDate(newDate);
+  };
+
+  const goToNextWeek = () => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(currentDate.getDate() + 7);
+    setCurrentDate(newDate);
+  };
+
+  const goToToday = () => setCurrentDate(new Date());
+
+  const handleAdminLogin = () => {
+    if (password === '1000') {
+      setIsAdmin(true);
+      setShowPasswordModal(false);
+      setPassword('');
+    } else {
+      alert('Mot de passe incorrect');
+    }
+  };
+
+  const handleAdminLogout = () => setIsAdmin(false);
+
+  const addEmployee = async () => {
+    if (newEmployeeName && selectedDepartment) {
+      const newEmps = { ...employees };
+      if (!newEmps[selectedDepartment]) newEmps[selectedDepartment] = [];
+      newEmps[selectedDepartment] = [...newEmps[selectedDepartment], newEmployeeName];
+      setEmployees(newEmps);
+      await saveEmployees(newEmps);
+      setNewEmployeeName('');
+      setShowAddEmployee(false);
+    }
+  };
+
+  const handleDeleteClick = (deptName, employeeName) => {
+    setEmployeeToDelete({ dept: deptName, name: employeeName });
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (employeeToDelete) {
+      const newEmps = { ...employees };
+      if (newEmps[employeeToDelete.dept]) {
+        newEmps[employeeToDelete.dept] = newEmps[employeeToDelete.dept].filter(
+          name => name !== employeeToDelete.name
+        );
+      }
+      setEmployees(newEmps);
+      await saveEmployees(newEmps);
+      setShowDeleteConfirm(false);
+      setEmployeeToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setEmployeeToDelete(null);
+  };
+
+  const updateSchedule = async (dept, employee, day, type, value) => {
+    const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    const newSchedules = { ...schedules, [key]: { ...schedules[key], [type]: value } };
+    setSchedules(newSchedules);
+    await saveSchedule(key, newSchedules[key]);
+  };
+
+  const pasteSchedule = async (dept, employee, day) => {
+    if (copiedSchedule) {
+      const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+      const newSchedules = { ...schedules, [key]: copiedSchedule };
+      setSchedules(newSchedules);
+      await saveSchedule(key, copiedSchedule);
+    }
+  };
+
+  const handleCellClick = (dept, emp, day) => {
+    setSelectedCell({ dept, emp, day });
+  };
+
+  const getSchedule = (dept, employee, day) => {
+    const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    return schedules[key] || { start: '--h--', end: '--h--' };
+  };
+
+  const copyWeekToNext = async () => {
+    const nextWeekDate = new Date(currentDate);
+    nextWeekDate.setDate(currentDate.getDate() + 7);
+    const nextWeekDays = getWeekDays(nextWeekDate);
+    const newSchedules = { ...schedules };
+    
+    departments.forEach(dept => {
+      (employees[dept] || []).forEach(emp => {
+        weekDays.forEach((currentDay, idx) => {
+          const currentKey = `${dept}-${emp}-${currentDay.toISOString().split('T')[0]}`;
+          const nextKey = `${dept}-${emp}-${nextWeekDays[idx].toISOString().split('T')[0]}`;
+          if (schedules[currentKey]) {
+            newSchedules[nextKey] = { ...schedules[currentKey] };
+          }
+        });
+      });
+    });
+    
+    setSchedules(newSchedules);
+    await saveAllSchedules(newSchedules);
+    setShowCopyConfirm(true);
+  };
+
+  const exportSchedule = (dept) => {
+    // Créer une nouvelle fenêtre pour l'export PDF
+    const printWindow = window.open('', '', 'width=1200,height=800');
+    let html = `<html><head><title>Horaire - ${dept}</title><style>
+      @page { size: landscape; margin: 1cm; }
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px;
+        margin: 0;
+      }
+      h1 { 
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      h2 { 
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #666;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 20px; 
+      }
+      th, td { 
+        border: 1px solid #ddd; 
+        padding: 8px; 
+        text-align: center; 
+      }
+      th { 
+        background-color: #4B5563; 
+        color: white; 
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      @media print {
+        @page { size: landscape; }
+      }
+    </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
+    
+    weekDays.forEach((day, idx) => {
+      html += `<th>${dayNames[idx]}<br/>${formatDate(day)}</th>`;
+    });
+    html += '</tr>';
+    
+    (employees[dept] || []).forEach(emp => {
+      html += `<tr><td><strong>${emp}</strong></td>`;
+      weekDays.forEach(day => {
+        const sched = getSchedule(dept, emp, day);
+        html += `<td>${sched.start} - ${sched.end}</td>`;
+      });
+      html += '</tr>';
+    });
+    
+    html += '</table></body></html>';
+    printWindow.document.write(html);
+    printWindow.document.close();
+    
+    // Attendre que la page soit chargée puis lancer l'impression (qui permet de sauvegarder en PDF)
+    printWindow.onload = function() {
+      printWindow.print();
+    };
+  };
+
+  const printSchedule = (dept) => {
+    const printWindow = window.open('', '', 'width=1200,height=800');
+    let html = `<html><head><title>Horaire - ${dept}</title><style>
+      @page { size: landscape; }
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px;
+        margin: 0;
+      }
+      h1 { 
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      h2 { 
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #666;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 20px; 
+      }
+      th, td { 
+        border: 1px solid #ddd; 
+        padding: 8px; 
+        text-align: center; 
+      }
+      th { 
+        background-color: #4B5563; 
+        color: white; 
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      @media print {
+        @page { size: landscape; }
+      }
+    </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
+    
+    weekDays.forEach((day, idx) => {
+      html += `<th>${dayNames[idx]}<br/>${formatDate(day)}</th>`;
+    });
+    html += '</tr>';
+    (employees[dept] || []).forEach(emp => {
+      html += `<tr><td><strong>${emp}</strong></td>`;
+      weekDays.forEach(day => {
+        const sched = getSchedule(dept, emp, day);
+        html += `<td>${sched.start} - ${sched.end}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</table></body></html>';
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  const selectDateFromCalendar = (date) => {
+    setCurrentDate(date);
+    setShowCalendar(false);
+  };
+
+  const getCalendarDays = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(1 - firstDay.getDay());
+    const days = [];
+    for (let i = 0; i < 42; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      days.push(day);
+    }
+    return days;
+  };
+
+  const changeCalendarMonth = (offset) => {
+    const newDate = new Date(currentDate);
+    newDate.setMonth(currentDate.getMonth() + offset);
+    setCurrentDate(newDate);
+  };
+
+  if (loading) {
+    return (
+      <div style={{minHeight: '100vh', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+        <div style={{fontSize: '24px', fontWeight: 'bold', color: '#374151'}}>Chargement des horaires...</div>
+      </div>
+    );
   }
-  
-  .nav-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .nav-buttons {
-    justify-content: center;
-  }
-  
-  .dept-filter {
-    justify-content: center;
-  }
-  
-  .schedule-table {
-    font-size: 12px;
-  }
-  
-  .time-select {
-    font-size: 12px;
-  }
-}
+
+  return (
+    <div className="app-container">
+      <div className="main-content">
+        <div className="header-card">
+          <div className="header-title-section">
+            <h1>Gestionnaire des horaires - Golf Le Marthelinois</h1>
+            {copiedSchedule && isAdmin && (
+              <div className="copied-indicator">
+                📋 Horaire copié : {copiedSchedule.start} - {copiedSchedule.end}
+                <button onClick={() => setCopiedSchedule(null)} className="clear-copy-btn">✕</button>
+              </div>
+            )}
+            <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
+              {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
+            </button>
+          </div>
+
+          <div className="nav-section">
+            <div className="nav-buttons">
+              <button onClick={goToPreviousWeek} className="nav-btn"><ChevronLeft size={20} /> Précédente</button>
+              <button onClick={goToToday} className="btn-today">Aujourd'hui</button>
+              <button onClick={goToNextWeek} className="nav-btn">Suivante <ChevronRight size={20} /></button>
+              <button onClick={() => setShowCalendar(!showCalendar)} className="btn-calendar"><Calendar size={24} /></button>
+            </div>
+            <h2 className="week-title">Semaine du {getWeekString()}</h2>
+            <div className="export-container">
+              <button onClick={() => setShowExportMenu(!showExportMenu)} className="btn-export">
+                <Download size={20} /> Exporter / Imprimer
+              </button>
+              {showExportMenu && (
+                <div className="export-menu">
+                  {departments.map(dept => (
+                    <div key={dept} className="export-dept">
+                      <div className="export-dept-title">{dept}</div>
+                      <div className="export-actions">
+                        <button onClick={() => { exportSchedule(dept); setShowExportMenu(false); }} className="export-action-btn">
+                          <Download size={16} /> Exporter
+                        </button>
+                        <button onClick={() => { printSchedule(dept); setShowExportMenu(false); }} className="export-action-btn">
+                          <Printer size={16} /> Imprimer
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="dept-filter">
+            <span className="filter-label">Afficher:</span>
+            <button onClick={() => setVisibleDepartment('Tous')} className={`filter-btn ${visibleDepartment === 'Tous' ? 'active' : ''}`}>
+              Tous les départements
+            </button>
+            {departments.map(dept => (
+              <button key={dept} onClick={() => setVisibleDepartment(dept)} className={`filter-btn ${visibleDepartment === dept ? 'active' : ''}`}>
+                {dept}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {departments.filter(dept => visibleDepartment === 'Tous' || visibleDepartment === dept).map(dept => (
+          <div key={dept} className="dept-card">
+            <div className="dept-header">
+              <h3>{dept}</h3>
+              {isAdmin && (
+                <button onClick={() => { setSelectedDepartment(dept); setShowAddEmployee(true); }} className="btn-add-emp">
+                  <Plus size={20} /> Ajouter Employé
+                </button>
+              )}
+            </div>
+            <div className="table-container">
+              <table className="schedule-table">
+                <thead>
+                  <tr>
+                    <th>Employé</th>
+                    {weekDays.map((day, idx) => (
+                      <th key={idx}>
+                        {dayNames[idx]}<br/>
+                        <span className="date-small">{formatDate(day)}</span>
+                      </th>
+                    ))}
+                    {isAdmin && <th>Actions</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(employees[dept] || []).map((emp, empIdx) => (
+                    <tr key={`${dept}-${empIdx}`}>
+                      <td className="emp-name">{emp}</td>
+                      {weekDays.map((day, dayIdx) => {
+                        const sched = getSchedule(dept, emp, day);
+                        const isSelected = selectedCell && 
+                          selectedCell.dept === dept && 
+                          selectedCell.emp === emp && 
+                          selectedCell.day.toISOString() === day.toISOString();
+                        
+                        return (
+                          <td 
+                            key={dayIdx} 
+                            className={`schedule-cell ${isAdmin && isSelected ? 'selected-cell' : ''}`}
+                            onClick={() => isAdmin && handleCellClick(dept, emp, day)}
+                          >
+                            {isAdmin ? (
+                              <div className="time-selects">
+                                <select value={sched.start} onChange={(e) => updateSchedule(dept, emp, day, 'start', e.target.value)} className="time-select">
+                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                </select>
+                                <select value={sched.end} onChange={(e) => updateSchedule(dept, emp, day, 'end', e.target.value)} className="time-select">
+                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                </select>
+                              </div>
+                            ) : (
+                              <div className="time-display">{sched.start} - {sched.end}</div>
+                            )}
+                          </td>
+                        );
+                      })}
+                      {isAdmin && (
+                        <td>
+                          <button onClick={() => handleDeleteClick(dept, emp)} className="btn-delete" title="Supprimer">
+                            <Trash2 size={16} />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {isAdmin && (
+              <div className="copy-section">
+                <button onClick={copyWeekToNext} className="btn-copy">
+                  <ChevronRight size={20} /> Copier vers semaine suivante
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Modals */}
+      {showPasswordModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Connexion Administrateur</h3>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" />
+            <div className="modal-buttons">
+              <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
+              <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} className="modal-btn secondary">Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddEmployee && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Ajouter un Employé</h3>
+            <p className="modal-subtitle">Département: {selectedDepartment}</p>
+            <input type="text" value={newEmployeeName} onChange={(e) => setNewEmployeeName(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addEmployee()} placeholder="Nom de l'employé" className="modal-input" />
+            <div className="modal-buttons">
+              <button onClick={addEmployee} className="modal-btn primary">Ajouter</button>
+              <button onClick={() => { setShowAddEmployee(false); setNewEmployeeName(''); }} className="modal-btn secondary">Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCalendar && (
+        <div className="modal-overlay">
+          <div className="modal calendar-modal">
+            <div className="calendar-header">
+              <button onClick={() => changeCalendarMonth(-1)} className="calendar-nav-btn"><ChevronLeft size={20} /></button>
+              <h3>{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h3>
+              <button onClick={() => changeCalendarMonth(1)} className="calendar-nav-btn"><ChevronRight size={20} /></button>
+            </div>
+            <div className="calendar-days-header">
+              {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (<div key={day}>{day}</div>))}
+            </div>
+            <div className="calendar-days">
+              {getCalendarDays().map((day, idx) => {
+                const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+                const isToday = day.toDateString() === new Date().toDateString();
+                const isSelected = day.toDateString() === currentDate.toDateString();
+                return (
+                  <button key={idx} onClick={() => selectDateFromCalendar(day)} className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}>
+                    {day.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="modal-buttons">
+              <button onClick={() => setShowCalendar(false)} className="modal-btn secondary">Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteConfirm && employeeToDelete && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3 className="delete-title">Confirmer la suppression</h3>
+            <p>Voulez-vous vraiment supprimer <strong>{employeeToDelete.name}</strong> du département <strong>{employeeToDelete.dept}</strong> ?</p>
+            <div className="modal-buttons">
+              <button onClick={confirmDelete} className="modal-btn danger">Supprimer</button>
+              <button onClick={cancelDelete} className="modal-btn secondary">Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCopyConfirm && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3 className="success-title">✓ Copie réussie</h3>
+            <p>Les horaires de la semaine du <strong>{getWeekString()}</strong> ont été copiés vers la semaine suivante avec succès !</p>
+            <div className="modal-buttons">
+              <button onClick={() => setShowCopyConfirm(false)} className="modal-btn success">OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ScheduleManager;

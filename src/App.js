@@ -43,10 +43,35 @@ const ScheduleManager = () => {
   const [showCopyConfirm, setShowCopyConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copiedSchedule, setCopiedSchedule] = useState(null);
+  const [selectedCell, setSelectedCell] = useState(null);
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Gérer les raccourcis clavier Ctrl+C / Ctrl+V (ou Cmd+C / Cmd+V sur Mac)
+    const handleKeyDown = (e) => {
+      if (!isAdmin) return;
+
+      const isCopy = (e.ctrlKey || e.metaKey) && e.key === 'c';
+      const isPaste = (e.ctrlKey || e.metaKey) && e.key === 'v';
+
+      if (isCopy && selectedCell) {
+        e.preventDefault();
+        const sched = getSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
+        setCopiedSchedule({ start: sched.start, end: sched.end });
+      }
+
+      if (isPaste && selectedCell && copiedSchedule) {
+        e.preventDefault();
+        pasteSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdmin, selectedCell, copiedSchedule, schedules]);
 
   const loadData = async () => {
     try {
@@ -211,11 +236,6 @@ const ScheduleManager = () => {
     await saveSchedule(key, newSchedules[key]);
   };
 
-  const copySchedule = (dept, employee, day) => {
-    const sched = getSchedule(dept, employee, day);
-    setCopiedSchedule({ start: sched.start, end: sched.end });
-  };
-
   const pasteSchedule = async (dept, employee, day) => {
     if (copiedSchedule) {
       const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
@@ -223,6 +243,10 @@ const ScheduleManager = () => {
       setSchedules(newSchedules);
       await saveSchedule(key, copiedSchedule);
     }
+  };
+
+  const handleCellClick = (dept, emp, day) => {
+    setSelectedCell({ dept, emp, day });
   };
 
   const getSchedule = (dept, employee, day) => {
@@ -506,36 +530,25 @@ const ScheduleManager = () => {
                       <td className="emp-name">{emp}</td>
                       {weekDays.map((day, dayIdx) => {
                         const sched = getSchedule(dept, emp, day);
+                        const isSelected = selectedCell && 
+                          selectedCell.dept === dept && 
+                          selectedCell.emp === emp && 
+                          selectedCell.day.toISOString() === day.toISOString();
+                        
                         return (
-                          <td key={dayIdx} className="schedule-cell">
+                          <td 
+                            key={dayIdx} 
+                            className={`schedule-cell ${isAdmin && isSelected ? 'selected-cell' : ''}`}
+                            onClick={() => isAdmin && handleCellClick(dept, emp, day)}
+                          >
                             {isAdmin ? (
-                              <div className="time-selects-container">
-                                <div className="time-selects">
-                                  <select value={sched.start} onChange={(e) => updateSchedule(dept, emp, day, 'start', e.target.value)} className="time-select">
-                                    {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
-                                  </select>
-                                  <select value={sched.end} onChange={(e) => updateSchedule(dept, emp, day, 'end', e.target.value)} className="time-select">
-                                    {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
-                                  </select>
-                                </div>
-                                <div className="copy-paste-buttons">
-                                  <button 
-                                    onClick={() => copySchedule(dept, emp, day)} 
-                                    className="copy-btn"
-                                    title="Copier cet horaire"
-                                  >
-                                    📋
-                                  </button>
-                                  {copiedSchedule && (
-                                    <button 
-                                      onClick={() => pasteSchedule(dept, emp, day)} 
-                                      className="paste-btn"
-                                      title="Coller l'horaire copié"
-                                    >
-                                      📄
-                                    </button>
-                                  )}
-                                </div>
+                              <div className="time-selects">
+                                <select value={sched.start} onChange={(e) => updateSchedule(dept, emp, day, 'start', e.target.value)} className="time-select">
+                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                </select>
+                                <select value={sched.end} onChange={(e) => updateSchedule(dept, emp, day, 'end', e.target.value)} className="time-select">
+                                  {timeSlots.map(time => (<option key={time} value={time}>{time}</option>))}
+                                </select>
                               </div>
                             ) : (
                               <div className="time-display">{sched.start} - {sched.end}</div>
