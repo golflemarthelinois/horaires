@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/horaires/static/css/main.54239b59.css",
+    "main.js": "/horaires/static/js/main.fd08cb89.js",
+    "static/js/453.9d21ef5e.chunk.js": "/horaires/static/js/453.9d21ef5e.chunk.js",
+    "index.html": "/horaires/index.html",
+    "main.54239b59.css.map": "/horaires/static/css/main.54239b59.css.map",
+    "main.fd08cb89.js.map": "/horaires/static/js/main.fd08cb89.js.map",
+    "453.9d21ef5e.chunk.js.map": "/horaires/static/js/453.9d21ef5e.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.54239b59.css",
+    "static/js/main.fd08cb89.js"
+  ]
+}
