@@ -14,7 +14,7 @@ const ScheduleManager = () => {
   ];
 
   const timeSlots = [
-    '--h--',
+    '--',
     'N/D',
     '00:00', '00:30', '01:00', '01:30', '02:00', '02:30',
     '03:00', '03:30', '04:00', '04:30', '05:00', '05:30',
@@ -227,7 +227,7 @@ const ScheduleManager = () => {
 
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    return schedules[key] || { start: '--h--', end: '--h--' };
+    return schedules[key] || { start: '--', end: '--' };
   };
 
   const copyWeekToNext = async () => {
