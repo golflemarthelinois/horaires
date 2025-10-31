@@ -17,14 +17,14 @@ const ScheduleManager = () => {
   const timeSlots = [
     '--h--',
     'N/D',
-    '06:00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30', // Accueil
+    '6h00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30', // Accueil
     '6h30-12h30', '7h00-12h30', '12h30-17h00', // Départs
     '8h00-12h30', '13h30-19h30', // Terrain
     '11h00-19h30', '13h00-16h00', '16h00-20h00' // Carts
   ];
 
   const departmentPresets = {
-    "Proposé à l'accueil": ['06:00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30'],
+    "Proposé à l'accueil": ['6h00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30'],
     "Proposé aux départs": ['6h30-12h30', '7h00-12h30', '12h30-17h00'],
     "Proposé au terrain": ['8h00-12h30', '13h30-19h30'],
     "Proposé aux carts": ['11h00-19h30', '13h00-16h00', '16h00-20h00']
@@ -41,6 +41,7 @@ const ScheduleManager = () => {
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [selectedExportDept, setSelectedExportDept] = useState('');
   const [visibleDepartment, setVisibleDepartment] = useState('Tous');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
@@ -353,44 +354,52 @@ const ScheduleManager = () => {
 
   const exportSchedule = (dept) => {
     // Créer une nouvelle fenêtre pour l'export PDF
-    const printWindow = window.open('', '', 'width=1200,height=800');
+    const printWindow = window.open('', '', 'width=800,height=1000');
     let html = `<html><head><title>Horaire - ${dept}</title><style>
-      @page { size: landscape; margin: 1cm; }
+      @page { size: letter landscape; margin: 0.5in; }
       body { 
         font-family: Arial, sans-serif; 
-        padding: 20px;
+        padding: 10px;
         margin: 0;
+        font-size: 11px;
       }
       h1 { 
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+        font-size: 18px;
       }
       h2 { 
         text-align: center;
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         color: #666;
+        font-size: 14px;
       }
       table { 
         width: 100%; 
         border-collapse: collapse; 
-        margin-top: 20px; 
+        margin-top: 10px;
+        font-size: 10px;
       }
       th, td { 
         border: 1px solid #ddd; 
-        padding: 8px; 
+        padding: 6px 4px; 
         text-align: center; 
       }
       th { 
         background-color: #4B5563; 
-        color: white; 
+        color: white;
+        font-size: 10px;
       }
       th:first-child,
       td:first-child {
         text-align: left;
+        padding-left: 8px;
       }
       @media print {
-        @page { size: landscape; }
+        @page { size: letter landscape; margin: 0.5in; }
+        body { font-size: 10px; }
+        table { font-size: 9px; }
       }
     </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
     
@@ -419,44 +428,52 @@ const ScheduleManager = () => {
   };
 
   const printSchedule = (dept) => {
-    const printWindow = window.open('', '', 'width=1200,height=800');
+    const printWindow = window.open('', '', 'width=800,height=1000');
     let html = `<html><head><title>Horaire - ${dept}</title><style>
-      @page { size: landscape; }
+      @page { size: letter landscape; margin: 0.5in; }
       body { 
         font-family: Arial, sans-serif; 
-        padding: 20px;
+        padding: 10px;
         margin: 0;
+        font-size: 11px;
       }
       h1 { 
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+        font-size: 18px;
       }
       h2 { 
         text-align: center;
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         color: #666;
+        font-size: 14px;
       }
       table { 
         width: 100%; 
         border-collapse: collapse; 
-        margin-top: 20px; 
+        margin-top: 10px;
+        font-size: 10px;
       }
       th, td { 
         border: 1px solid #ddd; 
-        padding: 8px; 
+        padding: 6px 4px; 
         text-align: center; 
       }
       th { 
         background-color: #4B5563; 
-        color: white; 
+        color: white;
+        font-size: 10px;
       }
       th:first-child,
       td:first-child {
         text-align: left;
+        padding-left: 8px;
       }
       @media print {
-        @page { size: landscape; }
+        @page { size: letter landscape; margin: 0.5in; }
+        body { font-size: 10px; }
+        table { font-size: 9px; }
       }
     </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
     
@@ -513,11 +530,27 @@ const ScheduleManager = () => {
     startDate.setDate(1 - firstDay.getDay()); // Commencer au dimanche précédent
     
     const days = [];
-    for (let i = 0; i < 42; i++) { // 6 semaines max
+    let weeksToShow = 0;
+    
+    // Calculer combien de semaines complètes sont nécessaires
+    // Une semaine doit être incluse si elle contient au moins un jour du mois courant
+    for (let i = 0; i < 42; i++) {
+      const day = new Date(startDate);
+      day.setDate(startDate.getDate() + i);
+      
+      // Si ce jour appartient au mois courant, on doit inclure cette semaine
+      if (day.getMonth() === month) {
+        weeksToShow = Math.floor(i / 7) + 1;
+      }
+    }
+    
+    // Ajouter les jours uniquement pour les semaines nécessaires
+    for (let i = 0; i < weeksToShow * 7; i++) {
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
       days.push(day);
     }
+    
     return days;
   };
 
@@ -540,44 +573,47 @@ const ScheduleManager = () => {
     const printWindow = window.open('', '', 'width=1400,height=900');
     
     let html = `<html><head><title>Horaire Mensuel - ${dept}</title><style>
-      @page { size: landscape; margin: 1cm; }
+      @page { size: letter landscape; margin: 0.5in; }
       body { 
         font-family: Arial, sans-serif; 
-        padding: 20px;
+        padding: 15px;
         margin: 0;
+        font-size: 11px;
       }
       h1 { 
         text-align: center;
-        margin-bottom: 10px;
-        font-size: 24px;
+        margin-bottom: 8px;
+        font-size: 22px;
       }
       h2 { 
         text-align: center;
         margin-top: 0;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         color: #666;
-        font-size: 18px;
+        font-size: 16px;
       }
       .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 8px;
-        margin-top: 20px;
+        gap: 6px;
+        margin-top: 10px;
       }
       .day-header {
         background: #374151;
         color: white;
-        padding: 8px;
+        padding: 6px;
         text-align: center;
         font-weight: bold;
         border-radius: 4px;
+        font-size: 11px;
       }
       .day-cell {
         border: 2px solid #e5e7eb;
         border-radius: 4px;
-        padding: 8px;
-        min-height: 100px;
+        padding: 6px;
+        min-height: 90px;
         background: white;
+        font-size: 9px;
       }
       .day-cell.other-month {
         opacity: 0.4;
@@ -590,19 +626,20 @@ const ScheduleManager = () => {
       }
       .day-number {
         font-weight: bold;
-        font-size: 16px;
-        margin-bottom: 8px;
-        padding-bottom: 4px;
+        font-size: 13px;
+        margin-bottom: 6px;
+        padding-bottom: 3px;
         border-bottom: 1px solid #e5e7eb;
       }
       .schedule-item {
-        font-size: 11px;
-        padding: 3px 5px;
+        font-size: 9px;
+        padding: 3px 4px;
         margin: 2px 0;
         background: #dbeafe;
         border-radius: 3px;
         display: flex;
         justify-content: space-between;
+        line-height: 1.3;
       }
       .emp-name {
         font-weight: 600;
@@ -613,7 +650,7 @@ const ScheduleManager = () => {
       }
       .schedule-item.nd-schedule {
         background: #fee2e2;
-        border-left: 3px solid #dc2626;
+        border-left: 2px solid #dc2626;
       }
       .schedule-item.nd-schedule .emp-name {
         color: #991b1b;
@@ -623,7 +660,10 @@ const ScheduleManager = () => {
         font-weight: 600;
       }
       @media print {
-        @page { size: landscape; }
+        @page { size: letter landscape; margin: 0.5in; }
+        body { font-size: 10px; }
+        .day-cell { min-height: 80px; font-size: 8px; }
+        .schedule-item { font-size: 8px; }
       }
     </style></head><body>
       <h1>${dept}</h1>
@@ -707,24 +747,32 @@ const ScheduleManager = () => {
                   📆 Affichage hebdomadaire
                 </button>
                 <div className="export-container">
-                  <button onClick={() => setShowExportMenu(!showExportMenu)} className="btn-export">
-                    <Download size={20} /> Exporter / Imprimer
-                  </button>
-                  {showExportMenu && (
-                    <div className="export-menu">
-                      <div className="export-dept">
-                        <div className="export-dept-title">{monthViewDept}</div>
-                        <div className="export-actions">
-                          <button onClick={() => { exportMonthSchedule(monthViewDept); setShowExportMenu(false); }} className="export-action-btn">
-                            <Download size={16} /> Exporter
-                          </button>
-                          <button onClick={() => { printMonthSchedule(monthViewDept); setShowExportMenu(false); }} className="export-action-btn">
-                            <Printer size={16} /> Imprimer
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <select 
+                    value={selectedExportDept} 
+                    onChange={(e) => setSelectedExportDept(e.target.value)}
+                    className="export-select"
+                  >
+                    <option value="">Choisir un département</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                  <div className="export-actions-inline">
+                    <button 
+                      onClick={() => exportMonthSchedule(selectedExportDept)} 
+                      className="export-action-btn"
+                      disabled={!selectedExportDept}
+                    >
+                      <Download size={16} /> Exporter
+                    </button>
+                    <button 
+                      onClick={() => printMonthSchedule(selectedExportDept)} 
+                      className="export-action-btn"
+                      disabled={!selectedExportDept}
+                    >
+                      <Printer size={16} /> Imprimer
+                    </button>
+                  </div>
                 </div>
                 <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
                   {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
@@ -834,26 +882,32 @@ const ScheduleManager = () => {
                 {viewMode === 'week' ? '📅 Affichage mensuel' : '📆 Affichage hebdomadaire'}
               </button>
               <div className="export-container">
-                <button onClick={() => setShowExportMenu(!showExportMenu)} className="btn-export">
-                  <Download size={20} /> Exporter / Imprimer
-                </button>
-                {showExportMenu && (
-                  <div className="export-menu">
-                    {departments.map(dept => (
-                      <div key={dept} className="export-dept">
-                        <div className="export-dept-title">{dept}</div>
-                        <div className="export-actions">
-                          <button onClick={() => { exportSchedule(dept); setShowExportMenu(false); }} className="export-action-btn">
-                            <Download size={16} /> Exporter
-                          </button>
-                          <button onClick={() => { printSchedule(dept); setShowExportMenu(false); }} className="export-action-btn">
-                            <Printer size={16} /> Imprimer
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <select 
+                  value={selectedExportDept} 
+                  onChange={(e) => setSelectedExportDept(e.target.value)}
+                  className="export-select"
+                >
+                  <option value="">Choisir un département</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+                <div className="export-actions-inline">
+                  <button 
+                    onClick={() => exportSchedule(selectedExportDept)} 
+                    className="export-action-btn"
+                    disabled={!selectedExportDept}
+                  >
+                    <Download size={16} /> Exporter
+                  </button>
+                  <button 
+                    onClick={() => printSchedule(selectedExportDept)} 
+                    className="export-action-btn"
+                    disabled={!selectedExportDept}
+                  >
+                    <Printer size={16} /> Imprimer
+                  </button>
+                </div>
               </div>
               <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
                 {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
