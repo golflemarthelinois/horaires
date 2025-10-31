@@ -14,15 +14,6 @@ const ScheduleManager = () => {
     'Proposé aux carts'
   ];
 
-  const timeSlots = [
-    '--h--',
-    'N/D',
-    '6h00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30', // Accueil
-    '6h30-12h30', '7h00-12h30', '12h30-17h00', // Départs
-    '8h00-12h30', '13h30-19h30', // Terrain
-    '11h00-19h30', '13h00-16h00', '16h00-20h00' // Carts
-  ];
-
   const departmentPresets = {
     "Proposé à l'accueil": ['6h00-12h30', '6h30-12h30', '7h00-12h30', '12h30-17h30', '12h30-18h00', '12h30-18h30'],
     "Proposé aux départs": ['6h30-12h30', '7h00-12h30', '12h30-17h00'],
@@ -40,7 +31,6 @@ const ScheduleManager = () => {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [showExportMenu, setShowExportMenu] = useState(false);
   const [selectedExportDept, setSelectedExportDept] = useState('');
   const [visibleDepartment, setVisibleDepartment] = useState('Tous');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -64,6 +54,7 @@ const ScheduleManager = () => {
     // Recalculer les jours quand la date ou le mode d'affichage change
     const days = getWeekDays(currentDate);
     setWeekDays(days);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, viewMode]);
 
   useEffect(() => {
@@ -94,6 +85,7 @@ const ScheduleManager = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, selectedCell, copiedSchedule, schedules]);
 
   const getWeekDays = (date) => {
@@ -320,10 +312,6 @@ const ScheduleManager = () => {
     await saveSchedule(key, { schedule: '--h--' });
   };
 
-  const handleCellClick = (dept, emp, day) => {
-    setSelectedCell({ dept, emp, day });
-  };
-
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
     return schedules[key] || { schedule: '--h--' };
@@ -525,7 +513,6 @@ const ScheduleManager = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(1 - firstDay.getDay()); // Commencer au dimanche précédent
     
