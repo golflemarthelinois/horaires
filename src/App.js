@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, Download, Printer, Lock, Unlock, Plus, Trash2 } from 'lucide-react';
 import { db } from './firebaseConfig';
 import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
@@ -28,6 +28,13 @@ const ScheduleManager = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [employees, setEmployees] = useState({});
   const [schedules, setSchedules] = useState({});
+  const schedulesRef = useRef(schedules);
+  
+  // Synchroniser le ref à chaque changement de schedules
+  useEffect(() => {
+    schedulesRef.current = schedules;
+  }, [schedules]);
+  
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -38,10 +45,14 @@ const ScheduleManager = () => {
   const [showCopyConfirm, setShowCopyConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copiedSchedule, setCopiedSchedule] = useState(null);
-  const [selectedCell, setSelectedCell] = useState(null);
+  const [selectedCell, setSelectedCell] = useState(null); // Pour les raccourcis clavier copier/coller
+  const [editingCell, setEditingCell] = useState(null); // Pour l'édition au double-clic
+  const [editingValue, setEditingValue] = useState(''); // Valeur temporaire pendant l'édition
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false); // Confirmation visuelle
   const [viewMode, setViewMode] = useState('week'); // 'week' ou 'month'
   const [weekDays, setWeekDays] = useState([]);
   const [monthViewDept, setMonthViewDept] = useState("Proposé à l'accueil"); // Département pour vue mensuelle
+  const [, forceUpdate] = useState(0); // Pour forcer le re-render
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -61,6 +72,9 @@ const ScheduleManager = () => {
     // Gérer les raccourcis clavier Ctrl+C / Ctrl+V / Delete (ou Cmd+C / Cmd+V sur Mac)
     const handleKeyDown = (e) => {
       if (!isAdmin) return;
+      
+      // Ne pas intercepter les touches si on est en train d'éditer dans un input
+      if (editingCell) return;
 
       const isCopy = (e.ctrlKey || e.metaKey) && e.key === 'c';
       const isPaste = (e.ctrlKey || e.metaKey) && e.key === 'v';
@@ -86,7 +100,7 @@ const ScheduleManager = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, selectedCell, copiedSchedule, schedules]);
+  }, [isAdmin, selectedCell, copiedSchedule, schedules, editingCell]);
 
   const getWeekDays = (date) => {
     const sunday = new Date(date);
@@ -196,11 +210,12 @@ const ScheduleManager = () => {
 
   const goToToday = () => setCurrentDate(new Date());
 
-  const handleAdminLogin = () => {
+  const handleAdminLogin = async () => {
     if (password === '1000') {
       setIsAdmin(true);
       setShowPasswordModal(false);
       setPassword('');
+      await loadData();
     } else {
       alert('Mot de passe incorrect');
     }
@@ -291,9 +306,17 @@ const ScheduleManager = () => {
     }
     
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    
+    // Mettre à jour le state AVANT de sauvegarder
     const newSchedules = { ...schedules, [key]: { schedule: formattedValue } };
     setSchedules(newSchedules);
+    
+    // Sauvegarder dans Firebase en arrière-plan
     await saveSchedule(key, { schedule: formattedValue });
+    
+    // Afficher la confirmation visuelle
+    setShowSaveConfirmation(true);
+    setTimeout(() => setShowSaveConfirmation(false), 2000);
   };
 
   const pasteSchedule = async (dept, employee, day) => {
@@ -315,6 +338,26 @@ const ScheduleManager = () => {
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
     return schedules[key] || { schedule: '--h--' };
+  };
+
+  const getScheduleColorClass = (schedule) => {
+    // AJOUT DE CETTE VÉRIFICATION pour s'assurer que 'schedule' est une chaîne de caractères
+    if (typeof schedule !== 'string' || !schedule) {
+      return '';
+    }
+    
+    if (schedule === '--h--') return '';
+    if (schedule === 'N/D') return 'schedule-nd';
+    
+    // Extraire l'heure de début
+    const match = schedule.match(/^(\d+)h/);
+    if (!match) return '';
+    
+    const startHour = parseInt(match[1]);
+    
+    if (startHour < 12) return 'schedule-morning'; // Matin (avant 12h)
+    if (startHour >= 12 && startHour < 18) return 'schedule-afternoon'; // Après-midi (12h-18h)
+    return 'schedule-evening'; // Soir (après 18h)
   };
 
   const copyWeekToNext = async () => {
@@ -744,22 +787,14 @@ const ScheduleManager = () => {
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
                   </select>
-                  <div className="export-actions-inline">
-                    <button 
-                      onClick={() => exportMonthSchedule(selectedExportDept)} 
-                      className="export-action-btn"
-                      disabled={!selectedExportDept}
-                    >
-                      <Download size={16} /> Exporter
-                    </button>
-                    <button 
-                      onClick={() => printMonthSchedule(selectedExportDept)} 
-                      className="export-action-btn"
-                      disabled={!selectedExportDept}
-                    >
-                      <Printer size={16} /> Imprimer
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => printMonthSchedule(selectedExportDept)} 
+                    className="export-action-btn"
+                    disabled={!selectedExportDept}
+                    title="Imprimer ou enregistrer en PDF"
+                  >
+                    <Printer size={16} /> Imprimer
+                  </button>
                 </div>
                 <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
                   {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
@@ -835,7 +870,7 @@ const ScheduleManager = () => {
           <div className="modal-overlay">
             <div className="modal">
               <h3>Connexion Administrateur</h3>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" autoFocus />
               <div className="modal-buttons">
                 <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
                 <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} className="modal-btn secondary">Annuler</button>
@@ -861,6 +896,11 @@ const ScheduleManager = () => {
                 <button onClick={() => setCopiedSchedule(null)} className="clear-copy-btn">✕</button>
               </div>
             )}
+            {showSaveConfirmation && (
+              <div className="save-confirmation">
+                ✓ Sauvegardé
+              </div>
+            )}
             <div className="admin-controls">
               <button 
                 onClick={() => setViewMode(viewMode === 'week' ? 'month' : 'week')} 
@@ -879,22 +919,14 @@ const ScheduleManager = () => {
                     <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
-                <div className="export-actions-inline">
-                  <button 
-                    onClick={() => exportSchedule(selectedExportDept)} 
-                    className="export-action-btn"
-                    disabled={!selectedExportDept}
-                  >
-                    <Download size={16} /> Exporter
-                  </button>
-                  <button 
-                    onClick={() => printSchedule(selectedExportDept)} 
-                    className="export-action-btn"
-                    disabled={!selectedExportDept}
-                  >
-                    <Printer size={16} /> Imprimer
-                  </button>
-                </div>
+                <button 
+                  onClick={() => printSchedule(selectedExportDept)} 
+                  className="export-action-btn"
+                  disabled={!selectedExportDept}
+                  title="Imprimer ou enregistrer en PDF"
+                >
+                  <Printer size={16} /> Imprimer
+                </button>
               </div>
               <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
                 {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
@@ -962,8 +994,8 @@ const ScheduleManager = () => {
                         
                         return (
                           <td 
-                            key={dayIdx} 
-                            className={`schedule-cell ${isAdmin && isSelected ? 'selected-cell' : ''}`}
+                            key={`${dayIdx}-${sched.schedule}`}
+                            className={`schedule-cell ${getScheduleColorClass(sched.schedule)} ${isAdmin && isSelected ? 'selected-cell' : ''}`}
                             onClick={() => {
                               if (isAdmin) {
                                 setSelectedCell({ dept, emp, day });
@@ -972,53 +1004,80 @@ const ScheduleManager = () => {
                           >
                             {isAdmin ? (
                               <div className="schedule-input-container">
-                                {selectedCell && selectedCell.dept === dept && selectedCell.emp === emp && selectedCell.day.toISOString() === day.toISOString() ? (
-                                  // Mode édition complète : input text
-                                  <input 
+                                {editingCell && 
+                                 editingCell.dept === dept && 
+                                 editingCell.emp === emp && 
+                                 editingCell.day.toISOString() === day.toISOString() ? (
+                                  // Mode édition : input texte
+                                  <input
                                     type="text"
-                                    value={sched.schedule}
-                                    onChange={(e) => {
-                                      const key = `${dept}-${emp}-${day.toISOString().split('T')[0]}`;
-                                      const newSchedules = { ...schedules, [key]: { schedule: e.target.value } };
-                                      setSchedules(newSchedules);
-                                    }}
-                                    onBlur={(e) => {
-                                      updateSchedule(dept, emp, day, e.target.value);
-                                      setSelectedCell(null); // Retour au mode select
+                                    value={editingValue}
+                                    onChange={(e) => setEditingValue(e.target.value)}
+                                    onBlur={() => {
+                                      // Sauvegarder à la perte de focus
+                                      if (editingValue.trim()) {
+                                        updateSchedule(dept, emp, day, editingValue);
+                                      }
+                                      setEditingCell(null);
+                                      setEditingValue('');
                                     }}
                                     onKeyDown={(e) => {
-                                      if (e.key === 'Escape') {
-                                        setSelectedCell(null); // Annuler
-                                      } else if (e.key === 'Enter') {
-                                        e.target.blur(); // Valider
+                                      if (e.key === 'Enter') {
+                                        // Sauvegarder avec Enter
+                                        if (editingValue.trim()) {
+                                          updateSchedule(dept, emp, day, editingValue);
+                                        }
+                                        setEditingCell(null);
+                                        setEditingValue('');
+                                      } else if (e.key === 'Escape') {
+                                        // Annuler avec Escape
+                                        setEditingCell(null);
+                                        setEditingValue('');
                                       }
                                     }}
                                     autoFocus
                                     className="schedule-input"
                                     placeholder="ex: 830 1730"
+                                    onClick={(e) => e.stopPropagation()}
                                   />
                                 ) : (
-                                  // Mode normal : select dropdown
-                                  <select
-                                    value={sched.schedule === '✏️ Saisie manuelle...' ? '--h--' : sched.schedule}
-                                    onChange={(e) => {
-                                      if (e.target.value === 'custom') {
-                                        // Passer en mode édition
-                                        setSelectedCell({ dept, emp, day });
-                                      } else {
+                                  // Mode normal : select avec presets + bouton édition
+                                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                    <select
+                                      value={sched.schedule}
+                                      onChange={(e) => {
                                         updateSchedule(dept, emp, day, e.target.value);
-                                      }
-                                    }}
-                                    onClick={(e) => e.stopPropagation()} // Empêcher la propagation du clic
-                                    className="schedule-input schedule-select"
-                                  >
-                                    <option value="--h--">--h--</option>
-                                    <option value="N/D">N/D</option>
-                                    {(departmentPresets[dept] || []).map((preset, idx) => (
-                                      <option key={`${preset}-${idx}`} value={preset}>{preset}</option>
-                                    ))}
-                                    <option value="custom">✏️ Saisie manuelle...</option>
-                                  </select>
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="schedule-input schedule-select"
+                                      style={{ flex: 1 }}
+                                    >
+                                      <option value="--h--">--h--</option>
+                                      <option value="N/D">N/D</option>
+                                      {(departmentPresets[dept] || []).map((preset, idx) => (
+                                        <option key={`${preset}-${idx}`} value={preset}>{preset}</option>
+                                      ))}
+                                      {/* Si l'horaire actuel n'est pas dans les presets, l'ajouter comme option */}
+                                      {sched.schedule !== '--h--' && 
+                                       sched.schedule !== 'N/D' && 
+                                       !(departmentPresets[dept] || []).includes(sched.schedule) && (
+                                        <option key="custom-current" value={sched.schedule}>
+                                          {sched.schedule}
+                                        </option>
+                                      )}
+                                    </select>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingCell({ dept, emp, day });
+                                        setEditingValue(sched.schedule === '--h--' ? '' : sched.schedule);
+                                      }}
+                                      className="btn-edit-cell"
+                                      title="Saisir un horaire personnalisé"
+                                    >
+                                      ✏️
+                                    </button>
+                                  </div>
                                 )}
                               </div>
                             ) : (
@@ -1055,7 +1114,7 @@ const ScheduleManager = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Connexion Administrateur</h3>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" autoFocus />
             <div className="modal-buttons">
               <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
               <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} className="modal-btn secondary">Annuler</button>
@@ -1132,6 +1191,7 @@ const ScheduleManager = () => {
           </div>
         </div>
       )}
+
     </div>
   );
 };
