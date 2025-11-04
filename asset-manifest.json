@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/horaires/static/css/main.798f48a8.css",
-    "main.js": "/horaires/static/js/main.a2f99c51.js",
+    "main.css": "/horaires/static/css/main.2be6ed6d.css",
+    "main.js": "/horaires/static/js/main.9f642e6f.js",
     "static/js/453.9d21ef5e.chunk.js": "/horaires/static/js/453.9d21ef5e.chunk.js",
     "static/media/LeMarthelinois.png": "/horaires/static/media/LeMarthelinois.b664713b3395313f5c7c.png",
     "static/media/club_house.webp": "/horaires/static/media/club_house.bff501b5656add8141ca.webp",
     "index.html": "/horaires/index.html",
-    "main.798f48a8.css.map": "/horaires/static/css/main.798f48a8.css.map",
-    "main.a2f99c51.js.map": "/horaires/static/js/main.a2f99c51.js.map",
+    "main.2be6ed6d.css.map": "/horaires/static/css/main.2be6ed6d.css.map",
+    "main.9f642e6f.js.map": "/horaires/static/js/main.9f642e6f.js.map",
     "453.9d21ef5e.chunk.js.map": "/horaires/static/js/453.9d21ef5e.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.798f48a8.css",
-    "static/js/main.a2f99c51.js"
+    "static/css/main.2be6ed6d.css",
+    "static/js/main.9f642e6f.js"
   ]
 }
