@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Download, Printer, Lock, Unlock, Plus, Trash2 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import { db } from './firebaseConfig';
 import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import './App.css';
@@ -29,6 +29,7 @@ const ScheduleManager = () => {
   const [employees, setEmployees] = useState({});
   const [schedules, setSchedules] = useState({});
   const schedulesRef = useRef(schedules);
+  const dropdownRef = useRef(null); 
   
   // Synchroniser le ref à chaque changement de schedules
   useEffect(() => {
@@ -52,7 +53,8 @@ const ScheduleManager = () => {
   const [viewMode, setViewMode] = useState('week'); // 'week' ou 'month'
   const [weekDays, setWeekDays] = useState([]);
   const [monthViewDept, setMonthViewDept] = useState("Proposé à l'accueil"); // Département pour vue mensuelle
-  const [, forceUpdate] = useState(0); // Pour forcer le re-render
+  const [showExportMenu, setShowExportMenu] = useState(false); 
+  const [, forceUpdate] = useState(0); 
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -62,18 +64,31 @@ const ScheduleManager = () => {
   }, []);
 
   useEffect(() => {
-    // Recalculer les jours quand la date ou le mode d'affichage change
     const days = getWeekDays(currentDate);
     setWeekDays(days);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, viewMode]);
 
+  // Logique pour fermer le menu déroulant lors d'un clic à l'extérieur
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            setShowExportMenu(false);
+        }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+
   useEffect(() => {
     // Gérer les raccourcis clavier Ctrl+C / Ctrl+V / Delete (ou Cmd+C / Cmd+V sur Mac)
     const handleKeyDown = (e) => {
       if (!isAdmin) return;
-      
-      // Ne pas intercepter les touches si on est en train d'éditer dans un input
       if (editingCell) return;
 
       const isCopy = (e.ctrlKey || e.metaKey) && e.key === 'c';
@@ -86,7 +101,7 @@ const ScheduleManager = () => {
         setCopiedSchedule(sched.schedule);
       }
 
-      if (isPaste && selectedCell && copiedSchedule) {
+      if (isPaste && selectedCell && copiedSchedule !== null) {
         e.preventDefault();
         pasteSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
       }
@@ -123,18 +138,15 @@ const ScheduleManager = () => {
     try {
       setLoading(true);
       
-      // Charger les employés
       const employeesSnap = await getDocs(collection(db, 'employees'));
       const loadedEmployees = {};
       
       if (employeesSnap.empty) {
-        // Données par défaut si la base est vide - initialiser Firebase
         loadedEmployees["Proposé à l'accueil"] = ['Jean Dupont', 'Marie Tremblay'];
         loadedEmployees["Proposé aux départs"] = ['Pierre Lavoie', 'Sophie Martin'];
         loadedEmployees["Proposé au terrain"] = ['Luc Gagnon', 'Anne Roy'];
         loadedEmployees["Proposé aux carts"] = ['Marc Côté', 'Julie Boucher'];
         
-        // Sauvegarder les données par défaut dans Firebase
         for (const [dept, empList] of Object.entries(loadedEmployees)) {
           await setDoc(doc(db, 'employees', dept), { list: empList });
         }
@@ -145,7 +157,6 @@ const ScheduleManager = () => {
       }
       setEmployees(loadedEmployees);
 
-      // Charger les horaires
       const schedulesSnap = await getDocs(collection(db, 'schedules'));
       const loadedSchedules = {};
       schedulesSnap.forEach(docSnap => {
@@ -265,99 +276,104 @@ const ScheduleManager = () => {
   };
 
   const updateSchedule = async (dept, employee, day, value) => {
-    // Formater automatiquement la saisie
     let formattedValue = value;
     
-    // Si ce n'est pas --h-- ou N/D, on formate
-    if (value !== '--h--' && value !== 'N/D' && value.trim() !== '') {
-      // Enlever tous les caractères non numériques
-      const numberOnly = value.replace(/[^0-9]/g, '');
+    if (value !== '' && value !== 'N/D' && value.trim() !== '') {
+      const sanitizedValue = value.replace(/h/g, '').replace(/\s+/g, '').replace(/-/g, '').trim();
+      const numberOnly = sanitizedValue.replace(/[^0-9]/g, '');
       
       if (numberOnly.length >= 6) {
-        // Ex: 8301730 ou 08301730
         let start, end;
         
         if (numberOnly.length === 8) {
-          // Format complet: 08301730
           start = numberOnly.substring(0, 4);
           end = numberOnly.substring(4, 8);
         } else if (numberOnly.length === 7) {
-          // Format: 8301730
           start = numberOnly.substring(0, 3);
           end = numberOnly.substring(3, 7);
-        } else {
-          // 6 chiffres: 830730
+        } else if (numberOnly.length === 6) {
           start = numberOnly.substring(0, 3);
           end = numberOnly.substring(3, 6);
+        } else {
+          start = numberOnly.substring(0, Math.ceil(numberOnly.length / 2));
+          end = numberOnly.substring(Math.ceil(numberOnly.length / 2));
         }
         
-        // Formater start
-        const startHour = start.length === 4 ? start.substring(0, 2) : start.substring(0, 1);
-        const startMin = start.length === 4 ? start.substring(2, 4) : start.substring(1, 3);
-        
-        // Formater end
-        const endHour = end.length === 4 ? end.substring(0, 2) : end.substring(0, 1);
-        const endMin = end.length === 4 ? end.substring(2, 4) : (end.length === 3 ? end.substring(1, 3) : end.substring(0, 2));
-        
-        formattedValue = `${parseInt(startHour)}h${startMin}-${parseInt(endHour)}h${endMin}`;
+        if (start && end) {
+            const startHour = start.length === 4 ? start.substring(0, 2) : start.substring(0, 1);
+            const startMin = start.length === 4 ? start.substring(2, 4) : start.substring(1, 3);
+            
+            let endHour = end.length === 4 ? end.substring(0, 2) : end.substring(0, 1);
+            let endMin = end.length === 4 ? end.substring(2, 4) : (end.length === 3 ? end.substring(1, 3) : end.substring(0, 2));
+
+            const parsedStartHour = parseInt(startHour);
+            const parsedEndHour = parseInt(endHour);
+            
+            formattedValue = `${parsedStartHour}h${startMin}-${parsedEndHour}h${endMin}`;
+        } else {
+          formattedValue = value; 
+        }
       } else {
-        formattedValue = value; // Garder tel quel si pas assez de chiffres
+        formattedValue = value; 
       }
+    } else if (value.trim() === '') {
+      formattedValue = ''; // Chaîne vide pour les quarts non définis
     }
     
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
     
-    // Mettre à jour le state AVANT de sauvegarder
     const newSchedules = { ...schedules, [key]: { schedule: formattedValue } };
     setSchedules(newSchedules);
     
-    // Sauvegarder dans Firebase en arrière-plan
     await saveSchedule(key, { schedule: formattedValue });
     
-    // Afficher la confirmation visuelle
     setShowSaveConfirmation(true);
     setTimeout(() => setShowSaveConfirmation(false), 2000);
   };
 
   const pasteSchedule = async (dept, employee, day) => {
-    if (copiedSchedule) {
+    if (copiedSchedule !== null) {
       const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
       const newSchedules = { ...schedules, [key]: { schedule: copiedSchedule } };
       setSchedules(newSchedules);
       await saveSchedule(key, { schedule: copiedSchedule });
+      
+      setShowSaveConfirmation(true);
+      setTimeout(() => setShowSaveConfirmation(false), 2000);
     }
   };
 
   const deleteSchedule = async (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    const newSchedules = { ...schedules, [key]: { schedule: '--h--' } };
+    const newSchedules = { ...schedules, [key]: { schedule: '' } };
     setSchedules(newSchedules);
-    await saveSchedule(key, { schedule: '--h--' });
+    await saveSchedule(key, { schedule: '' });
+
+    setShowSaveConfirmation(true);
+    setTimeout(() => setShowSaveConfirmation(false), 2000);
   };
 
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    return schedules[key] || { schedule: '--h--' };
+    return schedules[key] || { schedule: '' }; 
   };
 
   const getScheduleColorClass = (schedule) => {
-    // AJOUT DE CETTE VÉRIFICATION pour s'assurer que 'schedule' est une chaîne de caractères
     if (typeof schedule !== 'string' || !schedule) {
       return '';
     }
     
-    if (schedule === '--h--') return '';
+    if (schedule === '') return '';
     if (schedule === 'N/D') return 'schedule-nd';
     
-    // Extraire l'heure de début
     const match = schedule.match(/^(\d+)h/);
     if (!match) return '';
     
     const startHour = parseInt(match[1]);
     
-    if (startHour < 12) return 'schedule-morning'; // Matin (avant 12h)
-    if (startHour >= 12 && startHour < 18) return 'schedule-afternoon'; // Après-midi (12h-18h)
-    return 'schedule-evening'; // Soir (après 18h)
+    if (startHour < 12) return 'schedule-morning'; 
+    if (startHour >= 12 && startHour < 18) return 'schedule-afternoon'; 
+    return 'schedule-evening'; 
   };
 
   const copyWeekToNext = async () => {
@@ -371,9 +387,9 @@ const ScheduleManager = () => {
         weekDays.forEach((currentDay, idx) => {
           const currentKey = `${dept}-${emp}-${currentDay.toISOString().split('T')[0]}`;
           const nextKey = `${dept}-${emp}-${nextWeekDays[idx].toISOString().split('T')[0]}`;
-          if (schedules[currentKey]) {
-            newSchedules[nextKey] = { ...schedules[currentKey] };
-          }
+          
+          const currentSchedule = schedules[currentKey] || { schedule: '' };
+          newSchedules[nextKey] = { ...currentSchedule };
         });
       });
     });
@@ -383,149 +399,53 @@ const ScheduleManager = () => {
     setShowCopyConfirm(true);
   };
 
-  const exportSchedule = (dept) => {
-    // Créer une nouvelle fenêtre pour l'export PDF
-    const printWindow = window.open('', '', 'width=800,height=1000');
-    let html = `<html><head><title>Horaire - ${dept}</title><style>
-      @page { size: letter landscape; margin: 0.5in; }
-      body { 
-        font-family: Arial, sans-serif; 
-        padding: 10px;
-        margin: 0;
-        font-size: 11px;
-      }
-      h1 { 
-        text-align: center;
-        margin-bottom: 5px;
-        font-size: 18px;
-      }
-      h2 { 
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #666;
-        font-size: 14px;
-      }
-      table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        margin-top: 10px;
-        font-size: 10px;
-      }
-      th, td { 
-        border: 1px solid #ddd; 
-        padding: 6px 4px; 
-        text-align: center; 
-      }
-      th { 
-        background-color: #4B5563; 
-        color: white;
-        font-size: 10px;
-      }
-      th:first-child,
-      td:first-child {
-        text-align: left;
-        padding-left: 8px;
-      }
-      @media print {
-        @page { size: letter landscape; margin: 0.5in; }
-        body { font-size: 10px; }
-        table { font-size: 9px; }
-      }
-    </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
-    
-    weekDays.forEach((day, idx) => {
-      html += `<th>${dayNames[day.getDay()]}<br/>${formatDate(day)}</th>`;
-    });
-    html += '</tr>';
-    
-    (employees[dept] || []).forEach(emp => {
-      html += `<tr><td><strong>${emp}</strong></td>`;
-      weekDays.forEach(day => {
-        const sched = getSchedule(dept, emp, day);
-        html += `<td>${sched.schedule}</td>`;
-      });
-      html += '</tr>';
-    });
-    
-    html += '</table></body></html>';
-    printWindow.document.write(html);
-    printWindow.document.close();
-    
-    // Attendre que la page soit chargée puis lancer l'impression (qui permet de sauvegarder en PDF)
-    printWindow.onload = function() {
-      printWindow.print();
-    };
-  };
-
+  // NOUVELLE FONCTION D'IMPRESSION (Vue Hebdomadaire - Masquage CSS)
   const printSchedule = (dept) => {
-    const printWindow = window.open('', '', 'width=800,height=1000');
-    let html = `<html><head><title>Horaire - ${dept}</title><style>
-      @page { size: letter landscape; margin: 0.5in; }
-      body { 
-        font-family: Arial, sans-serif; 
-        padding: 10px;
-        margin: 0;
-        font-size: 11px;
-      }
-      h1 { 
-        text-align: center;
-        margin-bottom: 5px;
-        font-size: 18px;
-      }
-      h2 { 
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #666;
-        font-size: 14px;
-      }
-      table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        margin-top: 10px;
-        font-size: 10px;
-      }
-      th, td { 
-        border: 1px solid #ddd; 
-        padding: 6px 4px; 
-        text-align: center; 
-      }
-      th { 
-        background-color: #4B5563; 
-        color: white;
-        font-size: 10px;
-      }
-      th:first-child,
-      td:first-child {
-        text-align: left;
-        padding-left: 8px;
-      }
-      @media print {
-        @page { size: letter landscape; margin: 0.5in; }
-        body { font-size: 10px; }
-        table { font-size: 9px; }
-      }
-    </style></head><body><h1>${dept}</h1><h2>Semaine du ${getWeekString()}</h2><table><tr><th>Employé</th>`;
+    // 1. Détecter le département à imprimer et normaliser le nom pour la classe CSS
+    const deptToPrint = dept.replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '-').toLowerCase();
     
-    weekDays.forEach((day, idx) => {
-      html += `<th>${dayNames[day.getDay()]}<br/>${formatDate(day)}</th>`;
-    });
-    html += '</tr>';
-    (employees[dept] || []).forEach(emp => {
-      html += `<tr><td><strong>${emp}</strong></td>`;
-      weekDays.forEach(day => {
-        const sched = getSchedule(dept, emp, day);
-        html += `<td>${sched.schedule}</td>`;
-      });
-      html += '</tr>';
-    });
-    html += '</table></body></html>';
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.print();
+    // 2. Ajouter les informations de la semaine et du département au body
+    document.body.setAttribute('data-print-title', `Horaire de ${dept}`);
+    document.body.setAttribute('data-print-subtitle', `Semaine du ${getWeekString()}`);
+    
+    // 3. Appliquer les classes d'impression au body IMMEDIATEMENT
+    document.body.classList.add('is-printing', 'print-week-view', `print-dept-${deptToPrint}`);
+    
+    // 4. Appel de l'impression native IMMÉDIAT (sans délai)
+    window.print();
+    
+    // 5. Restaurer l'affichage APRES l'impression
+    setTimeout(() => {
+        document.body.classList.remove('is-printing', 'print-week-view', `print-dept-${deptToPrint}`);
+        document.body.removeAttribute('data-print-title');
+        document.body.removeAttribute('data-print-subtitle');
+    }, 100); 
   };
 
+  // NOUVELLE FONCTION D'IMPRESSION (Vue Mensuelle - Masquage CSS)
+  const printMonthSchedule = (dept) => {
+    // 1. Détecter le département à imprimer et normaliser le nom pour la classe CSS
+    const deptToPrint = dept.replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '-').toLowerCase();
+    const monthYear = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+    // 2. Ajouter les informations du mois et du département au body
+    document.body.setAttribute('data-print-title', `Calendrier de ${dept}`);
+    document.body.setAttribute('data-print-subtitle', monthYear);
+
+    // 3. Appliquer les classes d'impression au body IMMEDIATEMENT
+    document.body.classList.add('is-printing', 'print-month-view', `print-dept-${deptToPrint}`);
+    
+    // 4. Appel de l'impression native IMMÉDIAT (sans délai)
+    window.print();
+    
+    // 5. Restaurer l'affichage APRES l'impression
+    setTimeout(() => {
+        document.body.classList.remove('is-printing', 'print-month-view', `print-dept-${deptToPrint}`);
+        document.body.removeAttribute('data-print-title');
+        document.body.removeAttribute('data-print-subtitle');
+    }, 100);
+  };
+  
   const selectDateFromCalendar = (date) => {
     setCurrentDate(date);
     setShowCalendar(false);
@@ -557,24 +477,20 @@ const ScheduleManager = () => {
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
     const startDate = new Date(firstDay);
-    startDate.setDate(1 - firstDay.getDay()); // Commencer au dimanche précédent
+    startDate.setDate(1 - firstDay.getDay());
     
     const days = [];
     let weeksToShow = 0;
     
-    // Calculer combien de semaines complètes sont nécessaires
-    // Une semaine doit être incluse si elle contient au moins un jour du mois courant
     for (let i = 0; i < 42; i++) {
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
       
-      // Si ce jour appartient au mois courant, on doit inclure cette semaine
       if (day.getMonth() === month) {
         weeksToShow = Math.floor(i / 7) + 1;
       }
     }
     
-    // Ajouter les jours uniquement pour les semaines nécessaires
     for (let i = 0; i < weeksToShow * 7; i++) {
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
@@ -590,159 +506,11 @@ const ScheduleManager = () => {
     setCurrentDate(newDate);
   };
 
-  // Vérifier si un employé a au moins un horaire défini (pas --h--) dans le mois
   const hasScheduleInMonth = (dept, emp, monthDays) => {
     return monthDays.some(day => {
       const sched = getSchedule(dept, emp, day);
-      return sched.schedule && sched.schedule !== '--h--';
+      return sched.schedule && sched.schedule !== '';
     });
-  };
-
-  const exportMonthSchedule = (dept) => {
-    const monthDays = getMonthDays();
-    const printWindow = window.open('', '', 'width=1400,height=900');
-    
-    let html = `<html><head><title>Horaire Mensuel - ${dept}</title><style>
-      @page { size: letter landscape; margin: 0.5in; }
-      body { 
-        font-family: Arial, sans-serif; 
-        padding: 15px;
-        margin: 0;
-        font-size: 11px;
-      }
-      h1 { 
-        text-align: center;
-        margin-bottom: 8px;
-        font-size: 22px;
-      }
-      h2 { 
-        text-align: center;
-        margin-top: 0;
-        margin-bottom: 15px;
-        color: #666;
-        font-size: 16px;
-      }
-      .calendar-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 6px;
-        margin-top: 10px;
-      }
-      .day-header {
-        background: #374151;
-        color: white;
-        padding: 6px;
-        text-align: center;
-        font-weight: bold;
-        border-radius: 4px;
-        font-size: 11px;
-      }
-      .day-cell {
-        border: 2px solid #e5e7eb;
-        border-radius: 4px;
-        padding: 6px;
-        min-height: 90px;
-        background: white;
-        font-size: 9px;
-      }
-      .day-cell.other-month {
-        opacity: 0.4;
-        background: #f9fafb;
-      }
-      .day-cell.today {
-        border-color: #3b82f6;
-        border-width: 3px;
-        background: #eff6ff;
-      }
-      .day-number {
-        font-weight: bold;
-        font-size: 13px;
-        margin-bottom: 6px;
-        padding-bottom: 3px;
-        border-bottom: 1px solid #e5e7eb;
-      }
-      .schedule-item {
-        font-size: 9px;
-        padding: 3px 4px;
-        margin: 2px 0;
-        background: #dbeafe;
-        border-radius: 3px;
-        display: flex;
-        justify-content: space-between;
-        line-height: 1.3;
-      }
-      .emp-name {
-        font-weight: 600;
-        color: #1e40af;
-      }
-      .schedule-time {
-        color: #1e3a8a;
-      }
-      .schedule-item.nd-schedule {
-        background: #fee2e2;
-        border-left: 2px solid #dc2626;
-      }
-      .schedule-item.nd-schedule .emp-name {
-        color: #991b1b;
-      }
-      .schedule-item.nd-schedule .schedule-time {
-        color: #dc2626;
-        font-weight: 600;
-      }
-      @media print {
-        @page { size: letter landscape; margin: 0.5in; }
-        body { font-size: 10px; }
-        .day-cell { min-height: 80px; font-size: 8px; }
-        .schedule-item { font-size: 8px; }
-      }
-    </style></head><body>
-      <h1>${dept}</h1>
-      <h2>${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}</h2>
-      <div class="calendar-grid">`;
-    
-    // En-têtes des jours
-    dayNames.forEach(day => {
-      html += `<div class="day-header">${day}</div>`;
-    });
-    
-    // Cellules des jours
-    const employeesWithSchedules = (employees[dept] || []).filter(emp => 
-      hasScheduleInMonth(dept, emp, monthDays)
-    );
-    
-    monthDays.forEach((day) => {
-      const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-      const isToday = day.toDateString() === new Date().toDateString();
-      
-      html += `<div class="day-cell ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''}">`;
-      html += `<div class="day-number">${day.getDate()}</div>`;
-      
-      // Ajouter les horaires des employés
-      employeesWithSchedules.forEach(emp => {
-        const sched = getSchedule(dept, emp, day);
-        if (sched.schedule && sched.schedule !== '--h--') {
-          const isND = sched.schedule === 'N/D';
-          html += `<div class="schedule-item ${isND ? 'nd-schedule' : ''}">
-            <span class="emp-name">${emp.split(' ')[0]}</span>
-            <span class="schedule-time">${sched.schedule}</span>
-          </div>`;
-        }
-      });
-      
-      html += '</div>';
-    });
-    
-    html += '</div></body></html>';
-    printWindow.document.write(html);
-    printWindow.document.close();
-    
-    printWindow.onload = function() {
-      printWindow.print();
-    };
-  };
-
-  const printMonthSchedule = (dept) => {
-    exportMonthSchedule(dept);
   };
 
   if (loading) {
@@ -757,7 +525,6 @@ const ScheduleManager = () => {
   if (viewMode === 'month') {
     const monthDays = getMonthDays();
     
-    // Filtrer les employés UNE SEULE FOIS pour tout le mois
     const employeesWithSchedules = (employees[monthViewDept] || []).filter(emp => 
       hasScheduleInMonth(monthViewDept, emp, monthDays)
     );
@@ -765,40 +532,51 @@ const ScheduleManager = () => {
     return (
       <div className="app-container">
         <div className="main-content">
-          <div className="header-card">
+          <div className="header-card sticky-header">
             <div className="header-title-section">
               <img src={logo} alt="Le Marthelinois" className="logo" />
-              <h1>Gestionnaire des horaires - Golf Le Marthelinois</h1>
+              <h1>Gestionnaire des horaires</h1>
               <div className="admin-controls">
-                <button 
-                  onClick={() => setViewMode('week')} 
-                  className="view-mode-btn"
-                >
-                  📆 Affichage hebdomadaire
-                </button>
-                <div className="export-container">
-                  <select 
-                    value={selectedExportDept} 
-                    onChange={(e) => setSelectedExportDept(e.target.value)}
-                    className="export-select"
-                  >
-                    <option value="">Choisir un département</option>
-                    {departments.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
-                  <button 
-                    onClick={() => printMonthSchedule(selectedExportDept)} 
-                    className="export-action-btn"
-                    disabled={!selectedExportDept}
-                    title="Imprimer ou enregistrer en PDF"
-                  >
-                    <Printer size={16} /> Imprimer
-                  </button>
+                
+                {/* REMOVED: Bouton de vue déplacé ici */}
+
+                {/* Menu d'Exportation en boutons directs pour impression */}
+                <div className="export-buttons-direct">
+                    <span className="export-label">Imprimer le calendrier:</span>
+                    <select 
+                        value={selectedExportDept} 
+                        onChange={(e) => setSelectedExportDept(e.target.value)}
+                        className="dropdown-select"
+                        style={{ width: '180px' }}
+                    >
+                        <option value="">Choisir un département</option>
+                        {departments.map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                    </select>
+                    <button 
+                        onClick={() => {
+                            if (selectedExportDept) {
+                                printMonthSchedule(selectedExportDept);
+                            }
+                        }} 
+                        className="export-print-btn"
+                        disabled={!selectedExportDept}
+                        title="Imprimer le département sélectionné en vue mensuelle"
+                    >
+                        <Printer size={20} />
+                    </button>
                 </div>
-                <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
-                  {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
+
+                {/* Bouton Admin/Déconnexion discret */}
+                <button 
+                  onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} 
+                  className="icon-admin-btn"
+                  title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
+                >
+                  {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
                 </button>
+
               </div>
             </div>
 
@@ -823,6 +601,14 @@ const ScheduleManager = () => {
                 </button>
               ))}
             </div>
+            
+            {/* NOUVEAU: Bouton de vue positionné ici pour un positionnement absolu plus facile */}
+            <button 
+              onClick={() => setViewMode('week')} 
+              className="view-mode-btn view-mode-btn-absolute"
+            >
+              📆 Hebdomadaire
+            </button>
           </div>
 
           <div className="month-calendar-view">
@@ -845,8 +631,7 @@ const ScheduleManager = () => {
                     <div className="month-calendar-schedules">
                       {employeesWithSchedules.map((emp, empIdx) => {
                         const sched = getSchedule(monthViewDept, emp, day);
-                        // N'afficher que si l'employé a un horaire défini (pas --h--)
-                        if (sched.schedule && sched.schedule !== '--h--') {
+                        if (sched.schedule && sched.schedule !== '') {
                           const isND = sched.schedule === 'N/D';
                           return (
                             <div key={empIdx} className={`month-schedule-item ${isND ? 'nd-schedule' : ''}`}>
@@ -886,10 +671,10 @@ const ScheduleManager = () => {
   return (
     <div className="app-container">
       <div className="main-content">
-        <div className="header-card">
+        <div className="header-card sticky-header">
           <div className="header-title-section">
             <img src={logo} alt="Le Marthelinois" className="logo" />
-            <h1>Gestionnaire des horaires - Golf Le Marthelinois</h1>
+            <h1>Gestionnaire des horaires</h1>
             {copiedSchedule && isAdmin && (
               <div className="copied-indicator">
                 📋 Horaire copié : {copiedSchedule}
@@ -902,34 +687,44 @@ const ScheduleManager = () => {
               </div>
             )}
             <div className="admin-controls">
+              
+              {/* REMOVED: Bouton de vue déplacé ici */}
+
+              {/* Menu d'Exportation en boutons directs pour impression */}
+              <div className="export-buttons-direct">
+                    <span className="export-label">Imprimer l'horaire:</span>
+                    <select 
+                        value={selectedExportDept} 
+                        onChange={(e) => setSelectedExportDept(e.target.value)}
+                        className="dropdown-select"
+                        style={{ width: '180px' }}
+                    >
+                        <option value="">Choisir un département</option>
+                        {departments.map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                    </select>
+                    <button 
+                        onClick={() => {
+                            if (selectedExportDept) {
+                                printSchedule(selectedExportDept);
+                            }
+                        }} 
+                        className="export-print-btn"
+                        disabled={!selectedExportDept}
+                        title="Imprimer le département sélectionné"
+                    >
+                        <Printer size={20} />
+                    </button>
+                </div>
+              
+              {/* Bouton Admin/Déconnexion discret */}
               <button 
-                onClick={() => setViewMode(viewMode === 'week' ? 'month' : 'week')} 
-                className="view-mode-btn"
+                onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} 
+                className="icon-admin-btn"
+                title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
               >
-                {viewMode === 'week' ? '📅 Affichage mensuel' : '📆 Affichage hebdomadaire'}
-              </button>
-              <div className="export-container">
-                <select 
-                  value={selectedExportDept} 
-                  onChange={(e) => setSelectedExportDept(e.target.value)}
-                  className="export-select"
-                >
-                  <option value="">Choisir un département</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-                <button 
-                  onClick={() => printSchedule(selectedExportDept)} 
-                  className="export-action-btn"
-                  disabled={!selectedExportDept}
-                  title="Imprimer ou enregistrer en PDF"
-                >
-                  <Printer size={16} /> Imprimer
-                </button>
-              </div>
-              <button onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} className={`admin-btn ${isAdmin ? 'admin-logout' : 'admin-login'}`}>
-                {isAdmin ? <><Unlock size={20} /> Déconnexion Admin</> : <><Lock size={20} /> Mode Admin</>}
+                {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
               </button>
             </div>
           </div>
@@ -955,6 +750,14 @@ const ScheduleManager = () => {
               </button>
             ))}
           </div>
+          
+          {/* NOUVEAU: Bouton de vue positionné ici pour un positionnement absolu plus facile */}
+          <button 
+            onClick={() => setViewMode('month')} 
+            className="view-mode-btn view-mode-btn-absolute"
+          >
+            📅 Mensuel
+          </button>
         </div>
 
         {departments.filter(dept => visibleDepartment === 'Tous' || visibleDepartment === dept).map(dept => (
@@ -971,7 +774,7 @@ const ScheduleManager = () => {
               <table className="schedule-table">
                 <thead>
                   <tr>
-                    <th>Employé</th>
+                    <th className="sticky-col">Employé</th>
                     {weekDays.map((day, idx) => (
                       <th key={idx}>
                         {dayNames[day.getDay()]}<br/>
@@ -984,7 +787,7 @@ const ScheduleManager = () => {
                 <tbody>
                   {(employees[dept] || []).map((emp, empIdx) => (
                     <tr key={`${dept}-${empIdx}`}>
-                      <td className="emp-name">{emp}</td>
+                      <td className="emp-name sticky-col">{emp}</td>
                       {weekDays.map((day, dayIdx) => {
                         const sched = getSchedule(dept, emp, day);
                         const isSelected = selectedCell && 
@@ -1014,23 +817,16 @@ const ScheduleManager = () => {
                                     value={editingValue}
                                     onChange={(e) => setEditingValue(e.target.value)}
                                     onBlur={() => {
-                                      // Sauvegarder à la perte de focus
-                                      if (editingValue.trim()) {
-                                        updateSchedule(dept, emp, day, editingValue);
-                                      }
+                                      updateSchedule(dept, emp, day, editingValue);
                                       setEditingCell(null);
                                       setEditingValue('');
                                     }}
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') {
-                                        // Sauvegarder avec Enter
-                                        if (editingValue.trim()) {
-                                          updateSchedule(dept, emp, day, editingValue);
-                                        }
+                                        updateSchedule(dept, emp, day, editingValue);
                                         setEditingCell(null);
                                         setEditingValue('');
                                       } else if (e.key === 'Escape') {
-                                        // Annuler avec Escape
                                         setEditingCell(null);
                                         setEditingValue('');
                                       }
@@ -1052,13 +848,12 @@ const ScheduleManager = () => {
                                       className="schedule-input schedule-select"
                                       style={{ flex: 1 }}
                                     >
-                                      <option value="--h--">--h--</option>
+                                      <option value=""></option>
                                       <option value="N/D">N/D</option>
                                       {(departmentPresets[dept] || []).map((preset, idx) => (
                                         <option key={`${preset}-${idx}`} value={preset}>{preset}</option>
                                       ))}
-                                      {/* Si l'horaire actuel n'est pas dans les presets, l'ajouter comme option */}
-                                      {sched.schedule !== '--h--' && 
+                                      {sched.schedule !== '' && 
                                        sched.schedule !== 'N/D' && 
                                        !(departmentPresets[dept] || []).includes(sched.schedule) && (
                                         <option key="custom-current" value={sched.schedule}>
@@ -1070,7 +865,7 @@ const ScheduleManager = () => {
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setEditingCell({ dept, emp, day });
-                                        setEditingValue(sched.schedule === '--h--' ? '' : sched.schedule);
+                                        setEditingValue(sched.schedule === '' ? '' : sched.schedule);
                                       }}
                                       className="btn-edit-cell"
                                       title="Saisir un horaire personnalisé"

@@ -16,11 +16,18 @@ body {
   background: #f3f4f6;
 }
 
-/* Header Card */
+/* Header Card - Sticky Header */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 20px;
+}
+
+/* Rendre le header sticky */
+.header-card.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50; /* Doit être au-dessus du reste du contenu */
 }
 
 .header-card {
@@ -70,7 +77,7 @@ body {
 }
 
 .header-title-section h1 {
-  font-size: 28px;
+  font-size: 50px;
   font-weight: 700;
   color: #1f2937;
   flex: 1;
@@ -78,49 +85,26 @@ body {
   text-align: center;
 }
 
+/* --- Contrôles (Admin et Export) --- */
 .admin-controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* Alignement horizontal par défaut */
   gap: 12px;
   align-items: center;
+  margin-left: auto; /* Pousser à droite */
 }
 
-.admin-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  border: 2px solid #d1d5db;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+/* Anciens styles (cachés) */
+.admin-btn, .export-container, .export-select, .export-action-btn {
+  display: none !important; 
 }
 
-.admin-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.admin-btn.admin-logout {
-  background: #10b981;
-  color: white;
-  border-color: #10b981;
-}
-
-.admin-btn.admin-logout:hover {
-  background: #059669;
-  border-color: #059669;
-}
-
+/* Bouton d'affichage de vue (conservé mais stylé) */
 .view-mode-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  padding: 10px 16px;
   border: 2px solid #3b82f6;
   border-radius: 8px;
   background: white;
@@ -129,6 +113,8 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 140px; 
+  justify-content: center;
 }
 
 .view-mode-btn:hover {
@@ -136,6 +122,98 @@ body {
   color: white;
 }
 
+/* NOUVEAU: Positionnement absolu pour le bas à droite du header (Point 1) */
+.view-mode-btn-absolute {
+    position: absolute;
+    bottom: 24px; /* Alignement avec le padding du header-card */
+    right: 24px;  /* Alignement avec le padding du header-card */
+    z-index: 55; /* Doit être au-dessus du contenu du header */
+}
+
+/* Bouton Admin/Déconnexion en icône discrète */
+.icon-admin-btn {
+  padding: 10px;
+  border-radius: 8px; 
+  border: 2px solid #d1d5db;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-admin-btn:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* Style spécifique pour l'état Déconnecté (Lock) */
+.icon-admin-btn svg[data-lucide="lock"] {
+    color: #4b5563;
+}
+
+/* Style spécifique pour l'état Connecté (Unlock) */
+.icon-admin-btn svg[data-lucide="unlock"] {
+    color: #10b981;
+}
+
+/* --- NOUVEAU: Conteneur d'exportation simplifié --- */
+.export-buttons-direct {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.export-label {
+    font-size: 14px;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.export-print-btn {
+    padding: 8px 10px;
+    border: 2px solid #10b981;
+    border-radius: 6px;
+    background: #10b981;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.export-print-btn:hover:not(:disabled) {
+    background: #059669;
+    border-color: #059669;
+}
+
+.export-print-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #d1d5db;
+    border-color: #d1d5db;
+    color: #9ca3af;
+}
+
+/* Sélecteur de département (Stylisation du sélecteur existant) */
+.dropdown-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+
+/* Styles conservés de l'ancienne version */
 .copied-indicator {
   display: flex;
   align-items: center;
@@ -260,64 +338,6 @@ body {
   width: 100%;
 }
 
-.export-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-}
-
-.export-select {
-  width: 220px;
-  padding: 10px 14px;
-  border: 2px solid #10b981;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.export-select:hover {
-  background: #f0fdf4;
-  border-color: #059669;
-}
-
-.export-select:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.export-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: 2px solid #10b981;
-  border-radius: 8px;
-  background: white;
-  color: #10b981;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.export-action-btn:hover:not(:disabled) {
-  background: #10b981;
-  color: white;
-}
-
-.export-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  border-color: #d1d5db;
-  color: #9ca3af;
-}
-
 /* Department Filter */
 .dept-filter {
   display: flex;
@@ -412,6 +432,7 @@ body {
   border-collapse: collapse;
 }
 
+/* Rendre l'en-tête de la colonne des jours et de la colonne Employé sticky */
 .schedule-table thead th {
   background: #374151;
   color: white;
@@ -420,6 +441,9 @@ body {
   font-weight: 600;
   font-size: 14px;
   border: 1px solid #4b5563;
+  position: sticky; /* Rendre les en-têtes sticky */
+  top: 0;           /* Positionner en haut du table-container */
+  z-index: 20;      /* Assurer qu'il est au-dessus du corps du tableau */
 }
 
 .schedule-table thead th:first-child {
@@ -440,12 +464,28 @@ body {
   text-align: center;
 }
 
+/* Colonne Employé (Nom) sticky */
+.sticky-col {
+  position: sticky !important;
+  left: 0;
+  z-index: 10;
+  box-shadow: 2px 0 2px -2px rgba(0,0,0,0.1);
+}
+
+.schedule-table thead th.sticky-col {
+  z-index: 30; /* Doit être au-dessus des autres th */
+}
+
 .emp-name {
   font-weight: 600;
   color: #1f2937;
   text-align: left !important;
   padding-left: 16px !important;
   background: #f9fafb;
+}
+
+.emp-name.sticky-col {
+    background: #f9fafb; /* Rassurer le background en cas de scroll */
 }
 
 .schedule-cell {
@@ -952,26 +992,130 @@ body {
     font-size: 9px;
     padding: 3px 4px;
   }
+
+  .admin-controls {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  /* NOUVEAU: Le bouton absolu revient dans le flux normal sur mobile */
+  .view-mode-btn-absolute {
+      position: static; 
+      width: 100%; 
+      margin-top: 12px;
+  }
+  
+  .export-buttons-direct {
+      /* Ajustement pour garder le contenu sur une ligne si possible */
+      flex-direction: row; 
+      align-items: center;
+      flex: 1; 
+      justify-content: space-between;
+  }
 }
 
-/* Print styles */
+/* --- STYLES D'IMPRESSION (Méthode Masquage) --- */
+
+/* Masquer tout le contenu de l'application par défaut en mode impression */
 @media print {
-  .admin-controls,
-  .nav-section,
-  .dept-filter,
-  .btn-add-emp,
-  .copy-section,
-  .btn-delete {
+    .main-content {
+        visibility: hidden;
+    }
+
+    /* 2 & 3. Afficher les titres d'impression */
+    body.is-printing .main-content::before {
+        content: attr(data-print-title); /* Affiche "Horaire de [Département]" ou "Calendrier de [Département]" */
+        display: block;
+        text-align: center;
+        font-size: 24pt;
+        font-weight: bold;
+        color: #1f2937;
+        margin-bottom: 5pt;
+    }
+    
+    body.is-printing .main-content::after {
+        content: attr(data-print-subtitle); /* Affiche "Semaine du..." ou "Mois Année" */
+        display: block;
+        text-align: center;
+        font-size: 16pt;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 20pt;
+    }
+}
+
+/* Afficher uniquement la div .main-content lorsque le body a la classe .is-printing */
+body.is-printing .main-content {
+    visibility: visible !important;
+    padding: 0.5in !important; /* Ajout de marges d'impression */
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+/* Masquer les éléments de navigation/contrôle en mode impression */
+body.is-printing .header-card,
+body.is-printing .nav-section,
+body.is-printing .dept-filter,
+body.is-printing .admin-controls,
+body.is-printing .copied-indicator,
+body.is-printing .copy-section,
+body.is-printing .btn-add-emp,
+body.is-printing .btn-delete,
+body.is-printing .view-mode-btn-absolute { /* Masquer le bouton de vue */
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Règle pour masquer TOUS les départements, puis afficher seulement le bon */
+body.is-printing .dept-card,
+body.is-printing .month-calendar-view {
     display: none !important;
-  }
-  
-  .app-container {
-    background: white;
-  }
-  
-  .dept-card {
+}
+
+/* Définir les classes pour cibler le département spécifique à afficher (week view) */
+body.is-printing.print-week-view .dept-card {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+/* Afficher la carte du département spécifique (basé sur le nom du département normalisé) */
+body.is-printing.print-dept-propose-a-l-accueil .dept-card:nth-child(1),
+body.is-printing.print-dept-propose-aux-departs .dept-card:nth-child(2),
+body.is-printing.print-dept-propose-au-terrain .dept-card:nth-child(3),
+body.is-printing.print-dept-propose-aux-carts .dept-card:nth-child(4) {
+    display: block !important;
+    visibility: visible !important;
     page-break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #e5e7eb;
-  }
+}
+
+/* Afficher la vue calendrier pour le mode mensuel */
+body.is-printing.print-month-view .month-calendar-view {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Assurer que l'en-tête du tableau est visible dans le flux de la page imprimée */
+body.is-printing .schedule-table thead th {
+    position: static !important;
+    top: auto !important;
+    z-index: 1 !important;
+}
+
+body.is-printing .emp-name.sticky-col {
+    position: static !important;
+    left: auto !important;
+}
+
+/* 3. Orientation d'impression (Paysage pour la vue hebdomadaire) */
+/* Règle @page pour tenter de forcer le paysage (support varie selon le navigateur) */
+@page weekview {
+    size: A4 landscape;
+}
+
+body.is-printing.print-week-view {
+    page: weekview;
 }
