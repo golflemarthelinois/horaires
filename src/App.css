@@ -27,7 +27,7 @@ body {
 .header-card.sticky-header {
   position: sticky;
   top: 0;
-  z-index: 50; /* Doit être au-dessus du reste du contenu */
+  z-index: 50; /* Doit être au-dessus du reste du contenu (mais bien en dessous des modals) */
 }
 
 .header-card {
@@ -38,6 +38,7 @@ body {
   margin-bottom: 24px;
   position: relative;
   overflow: hidden;
+  z-index: 50; /* explicit to avoid unexpected stacking */
 }
 
 .header-card::before {
@@ -96,7 +97,7 @@ body {
 
 /* Anciens styles (cachés) */
 .admin-btn, .export-container, .export-select, .export-action-btn {
-  display: none !important; 
+  display: none !important;
 }
 
 /* Bouton d'affichage de vue (conservé mais stylé) */
@@ -113,7 +114,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 140px; 
+  min-width: 140px;
   justify-content: center;
 }
 
@@ -124,16 +125,16 @@ body {
 
 /* NOUVEAU: Positionnement absolu pour le bas à droite du header (Point 1) */
 .view-mode-btn-absolute {
-    position: absolute;
-    bottom: 24px; /* Alignement avec le padding du header-card */
-    right: 24px;  /* Alignement avec le padding du header-card */
-    z-index: 55; /* Doit être au-dessus du contenu du header */
+  position: absolute;
+  bottom: 24px; /* Alignement avec le padding du header-card */
+  right: 24px;  /* Alignement avec le padding du header-card */
+  z-index: 55; /* Doit être au-dessus du contenu du header */
 }
 
 /* Bouton Admin/Déconnexion en icône discrète */
 .icon-admin-btn {
   padding: 10px;
-  border-radius: 8px; 
+  border-radius: 8px;
   border: 2px solid #d1d5db;
   background: white;
   color: #374151;
@@ -152,54 +153,54 @@ body {
 
 /* Style spécifique pour l'état Déconnecté (Lock) */
 .icon-admin-btn svg[data-lucide="lock"] {
-    color: #4b5563;
+  color: #4b5563;
 }
 
 /* Style spécifique pour l'état Connecté (Unlock) */
 .icon-admin-btn svg[data-lucide="unlock"] {
-    color: #10b981;
+  color: #10b981;
 }
 
 /* --- NOUVEAU: Conteneur d'exportation simplifié --- */
 .export-buttons-direct {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
-    background: #f9fafb;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
 }
 
 .export-label {
-    font-size: 14px;
-    color: #4b5563;
-    font-weight: 500;
+  font-size: 14px;
+  color: #4b5563;
+  font-weight: 500;
 }
 
 .export-print-btn {
-    padding: 8px 10px;
-    border: 2px solid #10b981;
-    border-radius: 6px;
-    background: #10b981;
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
+  padding: 8px 10px;
+  border: 2px solid #10b981;
+  border-radius: 6px;
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
 }
 
 .export-print-btn:hover:not(:disabled) {
-    background: #059669;
-    border-color: #059669;
+  background: #059669;
+  border-color: #059669;
 }
 
 .export-print-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: #d1d5db;
-    border-color: #d1d5db;
-    color: #9ca3af;
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
 }
 
 /* Sélecteur de département (Stylisation du sélecteur existant) */
@@ -432,7 +433,7 @@ body {
   border-collapse: collapse;
 }
 
-/* Rendre l'en-tête de la colonne des jours et de la colonne Employé sticky */
+/* Rendre l'en-tête de la colonne des jours et de la colonne Employé - removed sticky to allow normal scrolling */
 .schedule-table thead th {
   background: #374151;
   color: white;
@@ -441,9 +442,7 @@ body {
   font-weight: 600;
   font-size: 14px;
   border: 1px solid #4b5563;
-  position: sticky; /* Rendre les en-têtes sticky */
-  top: 0;           /* Positionner en haut du table-container */
-  z-index: 20;      /* Assurer qu'il est au-dessus du corps du tableau */
+  /* position: sticky removed so header scrolls with table */
 }
 
 .schedule-table thead th:first-child {
@@ -464,16 +463,16 @@ body {
   text-align: center;
 }
 
-/* Colonne Employé (Nom) sticky */
+/* Sticky employee column disabled to avoid split (allows header to scroll smoothly) */
 .sticky-col {
-  position: sticky !important;
-  left: 0;
-  z-index: 10;
-  box-shadow: 2px 0 2px -2px rgba(0,0,0,0.1);
+  position: static !important;
+  left: auto !important;
+  z-index: auto !important;
+  box-shadow: none !important;
 }
 
 .schedule-table thead th.sticky-col {
-  z-index: 30; /* Doit être au-dessus des autres th */
+  z-index: auto;
 }
 
 .emp-name {
@@ -484,10 +483,7 @@ body {
   background: #f9fafb;
 }
 
-.emp-name.sticky-col {
-    background: #f9fafb; /* Rassurer le background en cas de scroll */
-}
-
+/* Schedule cell colors */
 .schedule-cell {
   position: relative;
   min-width: 120px;
@@ -499,12 +495,6 @@ body {
   background: #f9fafb;
 }
 
-.schedule-cell.selected-cell {
-  background: #dbeafe !important;
-  box-shadow: inset 0 0 0 2px #3b82f6;
-}
-
-/* Couleurs par type d'horaire */
 .schedule-cell.schedule-morning {
   background: #dbeafe; /* Bleu clair - Matin */
 }
@@ -519,13 +509,6 @@ body {
 
 .schedule-cell.schedule-nd {
   background: #fee2e2; /* Rouge clair - N/D */
-}
-
-.schedule-cell.schedule-morning:hover,
-.schedule-cell.schedule-afternoon:hover,
-.schedule-cell.schedule-evening:hover,
-.schedule-cell.schedule-nd:hover {
-  filter: brightness(0.95);
 }
 
 .schedule-input-container {
@@ -620,502 +603,321 @@ body {
   color: white;
   font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.btn-copy:hover {
-  background: #059669;
-}
-
-/* Modals */
+/* Modals - améliorations pour visibilité et focus (fix stacking/context) */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(0,0,0,0.55) !important;
+  z-index: 100000 !important; /* Placé très au-dessus pour écraser tout stacking context */
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
-  width: 90%;
-  box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+  position: relative !important;
+  z-index: 100001 !important;
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  padding: 20px !important;
+  max-width: 480px !important;
+  width: calc(100% - 32px) !important;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.45) !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  display: block !important;
 }
 
+/* Titre modal */
 .modal h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 16px;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 0 0 10px 0 !important;
 }
 
-.modal-subtitle {
-  color: #6b7280;
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
+/* Input mot de passe : fond blanc net, texte sombre, caret visible */
 .modal-input {
-  width: 100%;
-  padding: 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-bottom: 16px;
-  transition: border-color 0.2s;
+  width: 100% !important;
+  padding: 12px 14px !important;
+  border-radius: 8px !important;
+  border: 2px solid #d1d5db !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 16px !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  caret-color: #0f172a !important; /* IMPORTANT : montre le caret */
 }
 
+/* Focus visible */
 .modal-input:focus {
-  outline: none;
-  border-color: #3b82f6;
+  outline: none !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 8px 30px rgba(37,99,235,0.18) !important;
 }
 
+/* Boutons modal */
 .modal-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
+  display: flex !important;
+  gap: 12px !important;
+  justify-content: flex-end !important;
+  margin-top: 12px !important;
 }
 
 .modal-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  padding: 10px 14px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  min-width: 96px !important;
+  cursor: pointer !important;
+  border: none !important;
 }
 
 .modal-btn.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.modal-btn.primary:hover {
-  background: #2563eb;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.16) !important;
 }
 
 .modal-btn.secondary {
-  background: #e5e7eb;
-  color: #374151;
+  background: #e5e7eb !important;
+  color: #0f172a !important;
 }
 
-.modal-btn.secondary:hover {
-  background: #d1d5db;
+/* calendar modal specifics kept smaller */
+.calendar-modal { max-width: 600px !important; }
+
+/* Accessibility */
+.modal input,
+.modal button {
+  -webkit-tap-highlight-color: rgba(0,0,0,0.06);
 }
 
-.modal-btn.danger {
-  background: #dc2626;
-  color: white;
-}
-
-.modal-btn.danger:hover {
-  background: #b91c1c;
-}
-
-.modal-btn.success {
-  background: #10b981;
-  color: white;
-}
-
-.modal-btn.success:hover {
-  background: #059669;
-}
-
-.delete-title {
-  color: #dc2626;
-}
-
-.success-title {
-  color: #10b981;
-}
-
-/* Calendar Modal */
-.calendar-modal {
-  max-width: 600px;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.calendar-nav-btn {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  border: 2px solid #e5e7eb;
-  border-radius: 6px;
+/* For print: show only clone but keep site's visual template for the table/grid.
+   Also set page to landscape to satisfy user's request. */
+/* Remarque: le bloc @media print a été conçu pour n'imprimer que .print-clone */
+.print-clone {
+  display: none;
   background: white;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.calendar-nav-btn:hover {
-  background: #f9fafb;
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.calendar-days-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-.calendar-days-header div {
-  text-align: center;
-  font-weight: 600;
-  color: #6b7280;
-  font-size: 14px;
-  padding: 8px;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.calendar-day {
+  color: #111827;
   padding: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Entête minimal pour le clone */
+.print-clone-header {
   text-align: center;
-}
-
-.calendar-day:hover {
-  background: #f9fafb;
-  border-color: #3b82f6;
-}
-
-.calendar-day.other-month {
-  color: #d1d5db;
-}
-
-.calendar-day.today {
-  background: #dbeafe;
-  color: #1e40af;
-  font-weight: 600;
-  border-color: #3b82f6;
-}
-
-.calendar-day.selected {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Vue mensuelle calendrier */
-.month-calendar-view {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 20px;
-}
-
-.month-calendar-header {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
   margin-bottom: 12px;
 }
 
-.month-calendar-day-name {
-  text-align: center;
+.print-clone-title {
+  font-size: 20px;
   font-weight: 700;
-  color: #374151;
-  font-size: 14px;
-  padding: 12px 8px;
-  background: #f9fafb;
-  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.print-clone-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Remplacement d'inputs/select pour impression */
+.print-replaced-select,
+.print-replaced-input {
+  display: inline-block;
+  padding: 3px 6px;
+  background: transparent;
+  color: #111827;
+}
+
+@media print {
+  /* Masquer tout sauf le clone d'impression (suppression de l'espace/gris de l'entête) */
+  body > *:not(.print-clone) {
+    display: none !important;
+  }
+
+  .print-clone,
+  .print-clone * {
+    visibility: visible !important;
+  }
+
+  .print-clone {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: none !important;
+    z-index: auto !important;
+    font-size: 12px !important;
+  }
+
+  .print-clone .sticky-col,
+  .print-clone .schedule-table thead th {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: auto !important;
+    box-shadow: none !important;
+  }
+
+  .print-clone .table-container,
+  .print-clone .print-table-container {
+    overflow: visible !important;
+  }
+
+  .print-clone .schedule-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    -webkit-print-color-adjust: exact !important;
+    table-layout: auto !important;
+  }
+
+  .print-clone .schedule-table tbody td {
+    color: #111827 !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  .print-clone .schedule-table thead th {
+    color: #ffffff !important;
+    background: #47494d !important;
+    -webkit-print-color-adjust: exact !important;
+    text-align: center !important;
+  }
+
+  .print-clone .schedule-table thead th:first-child {
+    text-align: center !important;
+  }
+
+  .print-clone td.emp-name {
+    color: #111827 !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+    padding-left: 12px !important;
+  }
+
+  .print-clone .month-calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .print-clone .month-calendar-cell { page-break-inside: avoid; }
+
+  .print-clone .month-calendar-day-name {
+    color: #ffffff !important;
+    background: #47494d !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  .print-clone .btn,
+  .print-clone .btn-copy,
+  .print-clone .btn-add-emp,
+  .print-clone .filter-btn,
+  .print-clone .btn-delete,
+  .print-clone .schedule-input,
+  .print-clone .schedule-select,
+  .print-clone .btn-edit-cell,
+  .print-clone .export-print-btn,
+  .print-clone .icon-admin-btn,
+  .print-clone .export-buttons-direct,
+  .print-clone .modal-overlay,
+  .print-clone .modal {
+    display: none !important;
+  }
+
+  @page {
+    size: A4 landscape;
+    margin: 12mm 10mm !important;
+  }
+
+  .print-clone .schedule-table thead th,
+  .print-clone .schedule-table tbody td {
+    padding: 6px 8px !important;
+  }
+}
+
+/* small utility for printed table wrapper */
+.print-table-container {
+  overflow: visible;
+  width: 100%;
+}
+
+/* -----------------------
+   Fix temporaire pour résoudre la disparition de la vue mensuelle
+   Ce bloc force l'affichage de la grille mensuelle si elle est masquée par une règle de stacking/context.
+   Gardez pour debug; on pourra affiner ensuite si tout est OK.
+   ----------------------- */
+.month-calendar-view {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  transform: none !important;
+  position: relative !important;
+  z-index: 60 !important; /* doit être au-dessus du header (header z-index=50) */
+}
+
+.month-calendar-header,
+.month-calendar-grid,
+.month-calendar-cell,
+.month-calendar-day-name {
+  display: block !important;
 }
 
 .month-calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+  gap: 8px !important;
 }
 
-.month-calendar-cell {
-  min-height: 120px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px;
-  background: white;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-}
+/* ------------------------------
+   Header compact pour écrans petits
+   ------------------------------ */
 
-.month-calendar-cell:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.month-calendar-cell.other-month {
-  opacity: 0.4;
-  background: #f9fafb;
-}
-
-.month-calendar-cell.today-cell {
-  border-color: #3b82f6;
-  border-width: 3px;
-  background: #eff6ff;
-}
-
-.month-calendar-date {
-  font-weight: 700;
-  color: #1f2937;
-  font-size: 16px;
-  margin-bottom: 8px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.month-calendar-schedules {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.month-schedule-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 6px;
-  background: #dbeafe;
-  border-radius: 4px;
-  font-size: 11px;
-  gap: 4px;
-}
-
-.month-schedule-item.nd-schedule {
-  background: #fee2e2;
-}
-
-.month-schedule-item.nd-schedule .emp-name-short {
-  color: #991b1b;
-}
-
-.month-schedule-item.nd-schedule .schedule-time {
-  color: #991b1b;
-}
-
-.emp-name-short {
-  font-weight: 600;
-  color: #1e40af;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
-.schedule-time {
-  color: #1e3a8a;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-/* Responsive */
+/* Tablette / petits laptops */
 @media (max-width: 1024px) {
-  .header-title-section {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .nav-section {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .nav-buttons {
-    justify-content: center;
-  }
-  
-  .week-title {
-    text-align: center;
-  }
-  
-  .month-calendar-cell {
-    min-height: 100px;
-  }
-  
-  .month-schedule-item {
-    font-size: 10px;
-  }
+  .header-card { padding: 12px !important; }
+  .logo { height: 80px !important; max-height: 80px !important; }
+  .header-title-section h1 { font-size: 28px !important; line-height: 1.05; margin: 0 8px; text-align: center; }
+  .header-title-section, .admin-controls { gap: 8px !important; }
+  .export-buttons-direct .export-label { display: none !important; }
+  .export-buttons-direct .dropdown-select { width: 140px !important; padding: 6px 8px !important; font-size: 13px !important; }
+  .view-mode-btn-absolute { bottom: 12px !important; right: 12px !important; padding: 6px 10px !important; font-size: 12px !important; min-width: 110px !important; }
+  .nav-section { gap: 8px !important; }
+  .dept-header { padding: 12px 16px !important; }
+  .dept-header h3 { font-size: 28px !important; }
 }
 
-@media (max-width: 768px) {
-  .main-content {
-    padding: 12px;
+/* Mobile étroit : encore plus compact */
+@media (max-width: 640px) {
+  .header-card::before { display: none !important; }
+  .header-card { padding: 8px !important; }
+  .logo { height: 48px !important; display: inline-block !important; }
+  .header-title-section h1 { font-size: 18px !important; font-weight: 700; text-align: center; }
+  .admin-controls { gap: 6px !important; justify-content: flex-end; width: 100%; }
+  .export-buttons-direct .dropdown-select, .export-buttons-direct .export-print-btn { padding: 6px !important; font-size: 12px !important; }
+  .nav-section { gap: 6px !important; }
+  .schedule-table thead th:first-child, .schedule-table tbody td.emp-name {
+    min-width: 110px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
-  
-  .header-card {
-    padding: 16px;
-  }
-  
-  .month-calendar-view {
-    padding: 12px;
-  }
-  
-  .month-calendar-cell {
-    min-height: 80px;
-    padding: 4px;
-  }
-  
-  .month-calendar-date {
-    font-size: 14px;
-  }
-  
-  .month-schedule-item {
-    font-size: 9px;
-    padding: 3px 4px;
-  }
-
-  .admin-controls {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  /* NOUVEAU: Le bouton absolu revient dans le flux normal sur mobile */
-  .view-mode-btn-absolute {
-      position: static; 
-      width: 100%; 
-      margin-top: 12px;
-  }
-  
-  .export-buttons-direct {
-      /* Ajustement pour garder le contenu sur une ligne si possible */
-      flex-direction: row; 
-      align-items: center;
-      flex: 1; 
-      justify-content: space-between;
-  }
+  .schedule-table, .print-clone .schedule-table { font-size: 12px !important; }
+  .filter-label, .filter-btn:not(.active) { display: none !important; }
 }
 
-/* --- STYLES D'IMPRESSION (Méthode Masquage) --- */
-
-/* Masquer tout le contenu de l'application par défaut en mode impression */
-@media print {
-    .main-content {
-        visibility: hidden;
-    }
-
-    /* 2 & 3. Afficher les titres d'impression */
-    body.is-printing .main-content::before {
-        content: attr(data-print-title); /* Affiche "Horaire de [Département]" ou "Calendrier de [Département]" */
-        display: block;
-        text-align: center;
-        font-size: 24pt;
-        font-weight: bold;
-        color: #1f2937;
-        margin-bottom: 5pt;
-    }
-    
-    body.is-printing .main-content::after {
-        content: attr(data-print-subtitle); /* Affiche "Semaine du..." ou "Mois Année" */
-        display: block;
-        text-align: center;
-        font-size: 16pt;
-        font-weight: 600;
-        color: #4b5563;
-        margin-bottom: 20pt;
-    }
-}
-
-/* Afficher uniquement la div .main-content lorsque le body a la classe .is-printing */
-body.is-printing .main-content {
-    visibility: visible !important;
-    padding: 0.5in !important; /* Ajout de marges d'impression */
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-}
-
-/* Masquer les éléments de navigation/contrôle en mode impression */
-body.is-printing .header-card,
-body.is-printing .nav-section,
-body.is-printing .dept-filter,
-body.is-printing .admin-controls,
-body.is-printing .copied-indicator,
-body.is-printing .copy-section,
-body.is-printing .btn-add-emp,
-body.is-printing .btn-delete,
-body.is-printing .view-mode-btn-absolute { /* Masquer le bouton de vue */
-  display: none !important;
-  visibility: hidden !important;
-}
-
-/* Règle pour masquer TOUS les départements, puis afficher seulement le bon */
-body.is-printing .dept-card,
-body.is-printing .month-calendar-view {
-    display: none !important;
-}
-
-/* Définir les classes pour cibler le département spécifique à afficher (week view) */
-body.is-printing.print-week-view .dept-card {
-    box-shadow: none !important;
-    border: none !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-}
-
-/* Afficher la carte du département spécifique (basé sur le nom du département normalisé) */
-body.is-printing.print-dept-propose-a-l-accueil .dept-card:nth-child(1),
-body.is-printing.print-dept-propose-aux-departs .dept-card:nth-child(2),
-body.is-printing.print-dept-propose-au-terrain .dept-card:nth-child(3),
-body.is-printing.print-dept-propose-aux-carts .dept-card:nth-child(4) {
-    display: block !important;
-    visibility: visible !important;
-    page-break-inside: avoid;
-}
-
-/* Afficher la vue calendrier pour le mode mensuel */
-body.is-printing.print-month-view .month-calendar-view {
-    display: block !important;
-    visibility: visible !important;
-}
-
-/* Assurer que l'en-tête du tableau est visible dans le flux de la page imprimée */
-body.is-printing .schedule-table thead th {
-    position: static !important;
-    top: auto !important;
-    z-index: 1 !important;
-}
-
-body.is-printing .emp-name.sticky-col {
-    position: static !important;
-    left: auto !important;
-}
-
-/* 3. Orientation d'impression (Paysage pour la vue hebdomadaire) */
-/* Règle @page pour tenter de forcer le paysage (support varie selon le navigateur) */
-@page weekview {
-    size: A4 landscape;
-}
-
-body.is-printing.print-week-view {
-    page: weekview;
-}
+/* Fin du fichier */

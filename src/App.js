@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import { db } from './firebaseConfig';
 import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 import './App.css';
@@ -9,7 +9,7 @@ import './club_house.webp'; // Image de fond pour le header
 const ScheduleManager = () => {
   const departments = [
     'Proposé à l\'accueil',
-    'Proposé aux départs', 
+    'Proposé aux départs',
     'Proposé au terrain',
     'Proposé aux carts'
   ];
@@ -29,13 +29,29 @@ const ScheduleManager = () => {
   const [employees, setEmployees] = useState({});
   const [schedules, setSchedules] = useState({});
   const schedulesRef = useRef(schedules);
-  const dropdownRef = useRef(null); 
-  
+  const dropdownRef = useRef(null);
+  const passwordInputRef = useRef(null);
+
   // Synchroniser le ref à chaque changement de schedules
   useEffect(() => {
     schedulesRef.current = schedules;
   }, [schedules]);
-  
+
+  // focus password when modal opens
+  useEffect(() => {
+    if (showPasswordModal) {
+      const t = setTimeout(() => {
+        if (passwordInputRef.current) {
+          try {
+            passwordInputRef.current.focus();
+            passwordInputRef.current.select && passwordInputRef.current.select();
+          } catch (e) {}
+        }
+      }, 50);
+      return () => clearTimeout(t);
+    }
+  }, [showPasswordModal]);
+
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -53,8 +69,8 @@ const ScheduleManager = () => {
   const [viewMode, setViewMode] = useState('week'); // 'week' ou 'month'
   const [weekDays, setWeekDays] = useState([]);
   const [monthViewDept, setMonthViewDept] = useState("Proposé à l'accueil"); // Département pour vue mensuelle
-  const [showExportMenu, setShowExportMenu] = useState(false); 
-  const [, forceUpdate] = useState(0); 
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [, forceUpdate] = useState(0);
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -69,18 +85,17 @@ const ScheduleManager = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate, viewMode]);
 
-  // Logique pour fermer le menu déroulant lors d'un clic à l'extérieur
   useEffect(() => {
     const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-            setShowExportMenu(false);
-        }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [dropdownRef]);
 
@@ -120,10 +135,10 @@ const ScheduleManager = () => {
   const getWeekDays = (date) => {
     const sunday = new Date(date);
     sunday.setDate(date.getDate() - date.getDay());
-    
+
     const days = [];
     const weeksToShow = viewMode === 'month' ? 4 : 1;
-    
+
     for (let week = 0; week < weeksToShow; week++) {
       for (let i = 0; i < 7; i++) {
         const day = new Date(sunday);
@@ -137,16 +152,16 @@ const ScheduleManager = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       const employeesSnap = await getDocs(collection(db, 'employees'));
       const loadedEmployees = {};
-      
+
       if (employeesSnap.empty) {
         loadedEmployees["Proposé à l'accueil"] = ['Jean Dupont', 'Marie Tremblay'];
         loadedEmployees["Proposé aux départs"] = ['Pierre Lavoie', 'Sophie Martin'];
         loadedEmployees["Proposé au terrain"] = ['Luc Gagnon', 'Anne Roy'];
         loadedEmployees["Proposé aux carts"] = ['Marc Côté', 'Julie Boucher'];
-        
+
         for (const [dept, empList] of Object.entries(loadedEmployees)) {
           await setDoc(doc(db, 'employees', dept), { list: empList });
         }
@@ -277,14 +292,14 @@ const ScheduleManager = () => {
 
   const updateSchedule = async (dept, employee, day, value) => {
     let formattedValue = value;
-    
+
     if (value !== '' && value !== 'N/D' && value.trim() !== '') {
       const sanitizedValue = value.replace(/h/g, '').replace(/\s+/g, '').replace(/-/g, '').trim();
       const numberOnly = sanitizedValue.replace(/[^0-9]/g, '');
-      
+
       if (numberOnly.length >= 6) {
         let start, end;
-        
+
         if (numberOnly.length === 8) {
           start = numberOnly.substring(0, 4);
           end = numberOnly.substring(4, 8);
@@ -298,35 +313,35 @@ const ScheduleManager = () => {
           start = numberOnly.substring(0, Math.ceil(numberOnly.length / 2));
           end = numberOnly.substring(Math.ceil(numberOnly.length / 2));
         }
-        
-        if (start && end) {
-            const startHour = start.length === 4 ? start.substring(0, 2) : start.substring(0, 1);
-            const startMin = start.length === 4 ? start.substring(2, 4) : start.substring(1, 3);
-            
-            let endHour = end.length === 4 ? end.substring(0, 2) : end.substring(0, 1);
-            let endMin = end.length === 4 ? end.substring(2, 4) : (end.length === 3 ? end.substring(1, 3) : end.substring(0, 2));
 
-            const parsedStartHour = parseInt(startHour);
-            const parsedEndHour = parseInt(endHour);
-            
-            formattedValue = `${parsedStartHour}h${startMin}-${parsedEndHour}h${endMin}`;
+        if (start && end) {
+          const startHour = start.length === 4 ? start.substring(0, 2) : start.substring(0, 1);
+          const startMin = start.length === 4 ? start.substring(2, 4) : start.substring(1, 3);
+
+          let endHour = end.length === 4 ? end.substring(0, 2) : end.substring(0, 1);
+          let endMin = end.length === 4 ? end.substring(2, 4) : (end.length === 3 ? end.substring(1, 3) : end.substring(0, 2));
+
+          const parsedStartHour = parseInt(startHour);
+          const parsedEndHour = parseInt(endHour);
+
+          formattedValue = `${parsedStartHour}h${startMin}-${parsedEndHour}h${endMin}`;
         } else {
-          formattedValue = value; 
+          formattedValue = value;
         }
       } else {
-        formattedValue = value; 
+        formattedValue = value;
       }
     } else if (value.trim() === '') {
       formattedValue = ''; // Chaîne vide pour les quarts non définis
     }
-    
+
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    
+
     const newSchedules = { ...schedules, [key]: { schedule: formattedValue } };
     setSchedules(newSchedules);
-    
+
     await saveSchedule(key, { schedule: formattedValue });
-    
+
     setShowSaveConfirmation(true);
     setTimeout(() => setShowSaveConfirmation(false), 2000);
   };
@@ -337,7 +352,7 @@ const ScheduleManager = () => {
       const newSchedules = { ...schedules, [key]: { schedule: copiedSchedule } };
       setSchedules(newSchedules);
       await saveSchedule(key, { schedule: copiedSchedule });
-      
+
       setShowSaveConfirmation(true);
       setTimeout(() => setShowSaveConfirmation(false), 2000);
     }
@@ -355,25 +370,25 @@ const ScheduleManager = () => {
 
   const getSchedule = (dept, employee, day) => {
     const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
-    return schedules[key] || { schedule: '' }; 
+    return schedules[key] || { schedule: '' };
   };
 
   const getScheduleColorClass = (schedule) => {
     if (typeof schedule !== 'string' || !schedule) {
       return '';
     }
-    
+
     if (schedule === '') return '';
     if (schedule === 'N/D') return 'schedule-nd';
-    
+
     const match = schedule.match(/^(\d+)h/);
     if (!match) return '';
-    
+
     const startHour = parseInt(match[1]);
-    
-    if (startHour < 12) return 'schedule-morning'; 
-    if (startHour >= 12 && startHour < 18) return 'schedule-afternoon'; 
-    return 'schedule-evening'; 
+
+    if (startHour < 12) return 'schedule-morning';
+    if (startHour >= 12 && startHour < 18) return 'schedule-afternoon';
+    return 'schedule-evening';
   };
 
   const copyWeekToNext = async () => {
@@ -381,71 +396,194 @@ const ScheduleManager = () => {
     nextWeekDate.setDate(currentDate.getDate() + 7);
     const nextWeekDays = getWeekDays(nextWeekDate);
     const newSchedules = { ...schedules };
-    
+
     departments.forEach(dept => {
       (employees[dept] || []).forEach(emp => {
         weekDays.forEach((currentDay, idx) => {
           const currentKey = `${dept}-${emp}-${currentDay.toISOString().split('T')[0]}`;
           const nextKey = `${dept}-${emp}-${nextWeekDays[idx].toISOString().split('T')[0]}`;
-          
+
           const currentSchedule = schedules[currentKey] || { schedule: '' };
           newSchedules[nextKey] = { ...currentSchedule };
         });
       });
     });
-    
+
     setSchedules(newSchedules);
     await saveAllSchedules(newSchedules);
     setShowCopyConfirm(true);
   };
 
-  // NOUVELLE FONCTION D'IMPRESSION (Vue Hebdomadaire - Masquage CSS)
+  // --- Impression : clone de la portion calendrier uniquement, en conservant le template visuel ---
+
+  const removeInteractiveElementsFrom = (container) => {
+    if (!container) return;
+    const selectorsToRemove = [
+      '.export-buttons-direct',
+      '.icon-admin-btn',
+      '.view-mode-btn',
+      '.btn-copy',
+      '.btn-add-emp',
+      '.filter-btn',
+      '.btn-delete',
+      '.schedule-input',
+      '.schedule-select',
+      '.btn-edit-cell',
+      '.export-print-btn',
+      '.modal-overlay',
+      '.modal',
+      '.admin-controls',
+      '.nav-buttons'
+    ];
+    selectorsToRemove.forEach(sel => {
+      container.querySelectorAll(sel).forEach(n => n.parentNode && n.parentNode.removeChild(n));
+    });
+
+    // remplacer inputs/selects par leur valeur textuelle pour un rendu statique propre
+    container.querySelectorAll('select').forEach(s => {
+      const span = document.createElement('span');
+      span.innerText = s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : '';
+      span.className = 'print-replaced-select';
+      s.parentNode && s.parentNode.replaceChild(span, s);
+    });
+    container.querySelectorAll('input').forEach(i => {
+      const span = document.createElement('span');
+      span.innerText = i.value || '';
+      span.className = 'print-replaced-input';
+      i.parentNode && i.parentNode.replaceChild(span, i);
+    });
+    // Remove buttons inside clone (icons)
+    container.querySelectorAll('button').forEach(b => {
+      // keep plain semantic buttons converted to text when appropriate; otherwise remove
+      b.parentNode && b.parentNode.removeChild(b);
+    });
+  };
+
+  // crée un clone contenant l'en-tête (header-card) + la dept-card ciblée
+  const createPrintCloneForDeptWeek = (dept) => {
+    const header = document.querySelector('.header-card');
+    const deptCards = Array.from(document.querySelectorAll('.dept-card'));
+    const deptCard = deptCards.find(c => c.querySelector('h3') && c.querySelector('h3').innerText.trim() === dept);
+    if (!deptCard) return null;
+
+    const clone = document.createElement('div');
+    clone.className = 'print-clone';
+
+    // cloner header et dept-card (pour garder le même template graphique)
+    const headerClone = header ? header.cloneNode(true) : null;
+    const deptClone = deptCard.cloneNode(true);
+
+    // Nettoyer éléments interactifs des clones
+    removeInteractiveElementsFrom(headerClone);
+    removeInteractiveElementsFrom(deptClone);
+
+    // For week view we want to ensure the table is fully expanded (remove overflow from container)
+    if (deptClone.querySelector('.table-container')) {
+      deptClone.querySelector('.table-container').style.overflow = 'visible';
+    }
+
+    // Insérer un petit indicateur (titre/sub) si nécessaire (conservatif: headerClone contient logo/titre)
+    clone.appendChild(headerClone || document.createElement('div'));
+    clone.appendChild(deptClone);
+
+    document.body.appendChild(clone);
+    // Force a reflow to ensure styles apply before printing
+    // eslint-disable-next-line no-unused-expressions
+    clone.offsetHeight;
+    return clone;
+  };
+
+  // crée un clone contenant l'en-tête (header-card) + la vue mensuelle (month-calendar-view)
+  const createPrintCloneForMonth = (dept) => {
+    const header = document.querySelector('.header-card');
+    const monthView = document.querySelector('.month-calendar-view');
+    if (!monthView) return null;
+
+    const clone = document.createElement('div');
+    clone.className = 'print-clone';
+
+    const headerClone = header ? header.cloneNode(true) : null;
+    const monthClone = monthView.cloneNode(true);
+
+    // Nettoyer éléments interactifs et ne garder que la grille + contenu
+    removeInteractiveElementsFrom(headerClone);
+    removeInteractiveElementsFrom(monthClone);
+
+    clone.appendChild(headerClone || document.createElement('div'));
+    clone.appendChild(monthClone);
+
+    document.body.appendChild(clone);
+    // Force reflow
+    // eslint-disable-next-line no-unused-expressions
+    clone.offsetHeight;
+    return clone;
+  };
+
+  const cleanupPrintClone = (clone, afterprintHandler, fallbackTimer) => {
+    try {
+      if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
+      if (afterprintHandler) window.removeEventListener('afterprint', afterprintHandler);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+    } catch (err) {
+      console.error('cleanupPrintClone error', err);
+    }
+  };
+
+  // Impression de la vue hebdomadaire — n'imprime que la portion calendrier du département choisi en conservant le template visuel
   const printSchedule = (dept) => {
-    // 1. Détecter le département à imprimer et normaliser le nom pour la classe CSS
-    const deptToPrint = dept.replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '-').toLowerCase();
-    
-    // 2. Ajouter les informations de la semaine et du département au body
-    document.body.setAttribute('data-print-title', `Horaire de ${dept}`);
-    document.body.setAttribute('data-print-subtitle', `Semaine du ${getWeekString()}`);
-    
-    // 3. Appliquer les classes d'impression au body IMMEDIATEMENT
-    document.body.classList.add('is-printing', 'print-week-view', `print-dept-${deptToPrint}`);
-    
-    // 4. Appel de l'impression native IMMÉDIAT (sans délai)
-    window.print();
-    
-    // 5. Restaurer l'affichage APRES l'impression
-    setTimeout(() => {
-        document.body.classList.remove('is-printing', 'print-week-view', `print-dept-${deptToPrint}`);
-        document.body.removeAttribute('data-print-title');
-        document.body.removeAttribute('data-print-subtitle');
-    }, 100); 
+    try {
+      const clone = createPrintCloneForDeptWeek(dept);
+      if (!clone) {
+        alert('Impossible de trouver le département à imprimer.');
+        return;
+      }
+
+      const afterprintHandler = () => {
+        cleanupPrintClone(clone, afterprintHandler, fallbackTimeout);
+      };
+      window.addEventListener('afterprint', afterprintHandler);
+
+      // Small timeout to ensure browser has rendered clone and computed styles
+      setTimeout(() => {
+        window.print();
+      }, 200);
+
+      const fallbackTimeout = setTimeout(() => {
+        cleanupPrintClone(clone, afterprintHandler, fallbackTimeout);
+      }, 5000);
+    } catch (err) {
+      console.error('Erreur printSchedule:', err);
+    }
   };
 
-  // NOUVELLE FONCTION D'IMPRESSION (Vue Mensuelle - Masquage CSS)
+  // Impression de la vue mensuelle — n'imprime que la portion calendrier (grille) en conservant le template visuel
   const printMonthSchedule = (dept) => {
-    // 1. Détecter le département à imprimer et normaliser le nom pour la classe CSS
-    const deptToPrint = dept.replace(/[^a-zA-Z0-9]/g, '-').replace(/--/g, '-').toLowerCase();
-    const monthYear = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    try {
+      const clone = createPrintCloneForMonth(dept);
+      if (!clone) {
+        alert('Impossible de préparer l\'impression du calendrier.');
+        return;
+      }
 
-    // 2. Ajouter les informations du mois et du département au body
-    document.body.setAttribute('data-print-title', `Calendrier de ${dept}`);
-    document.body.setAttribute('data-print-subtitle', monthYear);
+      const afterprintHandler = () => {
+        cleanupPrintClone(clone, afterprintHandler, fallbackTimeout);
+      };
+      window.addEventListener('afterprint', afterprintHandler);
 
-    // 3. Appliquer les classes d'impression au body IMMEDIATEMENT
-    document.body.classList.add('is-printing', 'print-month-view', `print-dept-${deptToPrint}`);
-    
-    // 4. Appel de l'impression native IMMÉDIAT (sans délai)
-    window.print();
-    
-    // 5. Restaurer l'affichage APRES l'impression
-    setTimeout(() => {
-        document.body.classList.remove('is-printing', 'print-month-view', `print-dept-${deptToPrint}`);
-        document.body.removeAttribute('data-print-title');
-        document.body.removeAttribute('data-print-subtitle');
-    }, 100);
+      setTimeout(() => {
+        window.print();
+      }, 200);
+
+      const fallbackTimeout = setTimeout(() => {
+        cleanupPrintClone(clone, afterprintHandler, fallbackTimeout);
+      }, 5000);
+    } catch (err) {
+      console.error('Erreur printMonthSchedule:', err);
+    }
   };
-  
+
+  // --- Fin impression ---
+
   const selectDateFromCalendar = (date) => {
     setCurrentDate(date);
     setShowCalendar(false);
@@ -478,25 +616,25 @@ const ScheduleManager = () => {
     const firstDay = new Date(year, month, 1);
     const startDate = new Date(firstDay);
     startDate.setDate(1 - firstDay.getDay());
-    
+
     const days = [];
     let weeksToShow = 0;
-    
+
     for (let i = 0; i < 42; i++) {
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
-      
+
       if (day.getMonth() === month) {
         weeksToShow = Math.floor(i / 7) + 1;
       }
     }
-    
+
     for (let i = 0; i < weeksToShow * 7; i++) {
       const day = new Date(startDate);
       day.setDate(startDate.getDate() + i);
       days.push(day);
     }
-    
+
     return days;
   };
 
@@ -515,8 +653,8 @@ const ScheduleManager = () => {
 
   if (loading) {
     return (
-      <div style={{minHeight: '100vh', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <div style={{fontSize: '24px', fontWeight: 'bold', color: '#374151'}}>Chargement des horaires...</div>
+      <div style={{ minHeight: '100vh', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#374151' }}>Chargement des horaires...</div>
       </div>
     );
   }
@@ -524,11 +662,11 @@ const ScheduleManager = () => {
   // Vue mensuelle (calendrier)
   if (viewMode === 'month') {
     const monthDays = getMonthDays();
-    
-    const employeesWithSchedules = (employees[monthViewDept] || []).filter(emp => 
+
+    const employeesWithSchedules = (employees[monthViewDept] || []).filter(emp =>
       hasScheduleInMonth(monthViewDept, emp, monthDays)
     );
-    
+
     return (
       <div className="app-container">
         <div className="main-content">
@@ -537,40 +675,38 @@ const ScheduleManager = () => {
               <img src={logo} alt="Le Marthelinois" className="logo" />
               <h1>Gestionnaire des horaires</h1>
               <div className="admin-controls">
-                
-                {/* REMOVED: Bouton de vue déplacé ici */}
 
                 {/* Menu d'Exportation en boutons directs pour impression */}
                 <div className="export-buttons-direct">
-                    <span className="export-label">Imprimer le calendrier:</span>
-                    <select 
-                        value={selectedExportDept} 
-                        onChange={(e) => setSelectedExportDept(e.target.value)}
-                        className="dropdown-select"
-                        style={{ width: '180px' }}
-                    >
-                        <option value="">Choisir un département</option>
-                        {departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
-                    <button 
-                        onClick={() => {
-                            if (selectedExportDept) {
-                                printMonthSchedule(selectedExportDept);
-                            }
-                        }} 
-                        className="export-print-btn"
-                        disabled={!selectedExportDept}
-                        title="Imprimer le département sélectionné en vue mensuelle"
-                    >
-                        <Printer size={20} />
-                    </button>
+                  <span className="export-label">Imprimer le calendrier:</span>
+                  <select
+                    value={selectedExportDept}
+                    onChange={(e) => setSelectedExportDept(e.target.value)}
+                    className="dropdown-select"
+                    style={{ width: '180px' }}
+                  >
+                    <option value="">Choisir un département</option>
+                    {departments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => {
+                      if (selectedExportDept) {
+                        printMonthSchedule(selectedExportDept);
+                      }
+                    }}
+                    className="export-print-btn"
+                    disabled={!selectedExportDept}
+                    title="Imprimer le département sélectionné en vue mensuelle"
+                  >
+                    <Printer size={20} />
+                  </button>
                 </div>
 
                 {/* Bouton Admin/Déconnexion discret */}
-                <button 
-                  onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} 
+                <button
+                  onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
                   className="icon-admin-btn"
                   title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
                 >
@@ -592,19 +728,18 @@ const ScheduleManager = () => {
             <div className="dept-filter">
               <span className="filter-label">Département:</span>
               {departments.map(dept => (
-                <button 
-                  key={dept} 
-                  onClick={() => setMonthViewDept(dept)} 
+                <button
+                  key={dept}
+                  onClick={() => setMonthViewDept(dept)}
                   className={`filter-btn ${monthViewDept === dept ? 'active' : ''}`}
                 >
                   {dept}
                 </button>
               ))}
             </div>
-            
-            {/* NOUVEAU: Bouton de vue positionné ici pour un positionnement absolu plus facile */}
-            <button 
-              onClick={() => setViewMode('week')} 
+
+            <button
+              onClick={() => setViewMode('week')}
               className="view-mode-btn view-mode-btn-absolute"
             >
               📆 Hebdomadaire
@@ -621,10 +756,10 @@ const ScheduleManager = () => {
               {monthDays.map((day, idx) => {
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                 const isToday = day.toDateString() === new Date().toDateString();
-                
+
                 return (
-                  <div 
-                    key={idx} 
+                  <div
+                    key={idx}
                     className={`month-calendar-cell ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today-cell' : ''}`}
                   >
                     <div className="month-calendar-date">{day.getDate()}</div>
@@ -655,7 +790,15 @@ const ScheduleManager = () => {
           <div className="modal-overlay">
             <div className="modal">
               <h3>Connexion Administrateur</h3>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" autoFocus />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+                placeholder="Mot de passe"
+                className="modal-input"
+                ref={passwordInputRef}
+              />
               <div className="modal-buttons">
                 <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
                 <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} className="modal-btn secondary">Annuler</button>
@@ -687,40 +830,35 @@ const ScheduleManager = () => {
               </div>
             )}
             <div className="admin-controls">
-              
-              {/* REMOVED: Bouton de vue déplacé ici */}
-
-              {/* Menu d'Exportation en boutons directs pour impression */}
               <div className="export-buttons-direct">
-                    <span className="export-label">Imprimer l'horaire:</span>
-                    <select 
-                        value={selectedExportDept} 
-                        onChange={(e) => setSelectedExportDept(e.target.value)}
-                        className="dropdown-select"
-                        style={{ width: '180px' }}
-                    >
-                        <option value="">Choisir un département</option>
-                        {departments.map(dept => (
-                            <option key={dept} value={dept}>{dept}</option>
-                        ))}
-                    </select>
-                    <button 
-                        onClick={() => {
-                            if (selectedExportDept) {
-                                printSchedule(selectedExportDept);
-                            }
-                        }} 
-                        className="export-print-btn"
-                        disabled={!selectedExportDept}
-                        title="Imprimer le département sélectionné"
-                    >
-                        <Printer size={20} />
-                    </button>
-                </div>
-              
-              {/* Bouton Admin/Déconnexion discret */}
-              <button 
-                onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)} 
+                <span className="export-label">Imprimer l'horaire:</span>
+                <select
+                  value={selectedExportDept}
+                  onChange={(e) => setSelectedExportDept(e.target.value)}
+                  className="dropdown-select"
+                  style={{ width: '180px' }}
+                >
+                  <option value="">Choisir un département</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => {
+                    if (selectedExportDept) {
+                      printSchedule(selectedExportDept);
+                    }
+                  }}
+                  className="export-print-btn"
+                  disabled={!selectedExportDept}
+                  title="Imprimer le département sélectionné"
+                >
+                  <Printer size={20} />
+                </button>
+              </div>
+
+              <button
+                onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
                 className="icon-admin-btn"
                 title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
               >
@@ -750,10 +888,9 @@ const ScheduleManager = () => {
               </button>
             ))}
           </div>
-          
-          {/* NOUVEAU: Bouton de vue positionné ici pour un positionnement absolu plus facile */}
-          <button 
-            onClick={() => setViewMode('month')} 
+
+          <button
+            onClick={() => setViewMode('month')}
             className="view-mode-btn view-mode-btn-absolute"
           >
             📅 Mensuel
@@ -777,7 +914,7 @@ const ScheduleManager = () => {
                     <th className="sticky-col">Employé</th>
                     {weekDays.map((day, idx) => (
                       <th key={idx}>
-                        {dayNames[day.getDay()]}<br/>
+                        {dayNames[day.getDay()]}<br />
                         <span className="date-small">{formatDate(day)}</span>
                       </th>
                     ))}
@@ -790,13 +927,13 @@ const ScheduleManager = () => {
                       <td className="emp-name sticky-col">{emp}</td>
                       {weekDays.map((day, dayIdx) => {
                         const sched = getSchedule(dept, emp, day);
-                        const isSelected = selectedCell && 
-                          selectedCell.dept === dept && 
-                          selectedCell.emp === emp && 
+                        const isSelected = selectedCell &&
+                          selectedCell.dept === dept &&
+                          selectedCell.emp === emp &&
                           selectedCell.day.toISOString() === day.toISOString();
-                        
+
                         return (
-                          <td 
+                          <td
                             key={`${dayIdx}-${sched.schedule}`}
                             className={`schedule-cell ${getScheduleColorClass(sched.schedule)} ${isAdmin && isSelected ? 'selected-cell' : ''}`}
                             onClick={() => {
@@ -807,11 +944,10 @@ const ScheduleManager = () => {
                           >
                             {isAdmin ? (
                               <div className="schedule-input-container">
-                                {editingCell && 
-                                 editingCell.dept === dept && 
-                                 editingCell.emp === emp && 
-                                 editingCell.day.toISOString() === day.toISOString() ? (
-                                  // Mode édition : input texte
+                                {editingCell &&
+                                  editingCell.dept === dept &&
+                                  editingCell.emp === emp &&
+                                  editingCell.day.toISOString() === day.toISOString() ? (
                                   <input
                                     type="text"
                                     value={editingValue}
@@ -837,7 +973,6 @@ const ScheduleManager = () => {
                                     onClick={(e) => e.stopPropagation()}
                                   />
                                 ) : (
-                                  // Mode normal : select avec presets + bouton édition
                                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                                     <select
                                       value={sched.schedule}
@@ -853,13 +988,13 @@ const ScheduleManager = () => {
                                       {(departmentPresets[dept] || []).map((preset, idx) => (
                                         <option key={`${preset}-${idx}`} value={preset}>{preset}</option>
                                       ))}
-                                      {sched.schedule !== '' && 
-                                       sched.schedule !== 'N/D' && 
-                                       !(departmentPresets[dept] || []).includes(sched.schedule) && (
-                                        <option key="custom-current" value={sched.schedule}>
-                                          {sched.schedule}
-                                        </option>
-                                      )}
+                                      {sched.schedule !== '' &&
+                                        sched.schedule !== 'N/D' &&
+                                        !(departmentPresets[dept] || []).includes(sched.schedule) && (
+                                          <option key="custom-current" value={sched.schedule}>
+                                            {sched.schedule}
+                                          </option>
+                                        )}
                                     </select>
                                     <button
                                       onClick={(e) => {
@@ -896,7 +1031,7 @@ const ScheduleManager = () => {
             {isAdmin && (
               <div className="copy-section">
                 <button onClick={copyWeekToNext} className="btn-copy">
-                  <ChevronRight size={20} /> Copier vers semaine suivante
+                  <ChevronRightIcon size={20} /> Copier vers semaine suivante
                 </button>
               </div>
             )}
@@ -909,7 +1044,15 @@ const ScheduleManager = () => {
         <div className="modal-overlay">
           <div className="modal">
             <h3>Connexion Administrateur</h3>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()} placeholder="Mot de passe" className="modal-input" autoFocus />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
+              placeholder="Mot de passe"
+              className="modal-input"
+              ref={passwordInputRef}
+            />
             <div className="modal-buttons">
               <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
               <button onClick={() => { setShowPasswordModal(false); setPassword(''); }} className="modal-btn secondary">Annuler</button>
@@ -923,7 +1066,14 @@ const ScheduleManager = () => {
           <div className="modal">
             <h3>Ajouter un Employé</h3>
             <p className="modal-subtitle">Département: {selectedDepartment}</p>
-            <input type="text" value={newEmployeeName} onChange={(e) => setNewEmployeeName(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && addEmployee()} placeholder="Nom de l'employé" className="modal-input" />
+            <input
+              type="text"
+              value={newEmployeeName}
+              onChange={(e) => setNewEmployeeName(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addEmployee()}
+              placeholder="Nom de l'employé"
+              className="modal-input"
+            />
             <div className="modal-buttons">
               <button onClick={addEmployee} className="modal-btn primary">Ajouter</button>
               <button onClick={() => { setShowAddEmployee(false); setNewEmployeeName(''); }} className="modal-btn secondary">Annuler</button>
@@ -949,7 +1099,11 @@ const ScheduleManager = () => {
                 const isToday = day.toDateString() === new Date().toDateString();
                 const isSelected = day.toDateString() === currentDate.toDateString();
                 return (
-                  <button key={idx} onClick={() => selectDateFromCalendar(day)} className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}>
+                  <button
+                    key={idx}
+                    onClick={() => selectDateFromCalendar(day)}
+                    className={`calendar-day ${!isCurrentMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+                  >
                     {day.getDate()}
                   </button>
                 );
