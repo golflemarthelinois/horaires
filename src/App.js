@@ -1080,6 +1080,7 @@ const ScheduleManager = () => {
               onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
               placeholder="Mot de passe"
               className="modal-input"
+              autoFocus
             />
             <div className="modal-buttons">
               <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>

@@ -679,6 +679,68 @@ body {
   border-color: #3b82f6;
 }
 
+/* Boutons de modal */
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.modal-btn.primary {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.modal-btn.primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.modal-btn.secondary {
+  background: white;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+.modal-btn.secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.modal-btn.danger {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.modal-btn.danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.modal-btn.success {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.modal-btn.success:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
 /* Calendar Modal */
 .calendar-modal {
   max-width: 600px;
@@ -1029,7 +1091,9 @@ body {
     page-break-before: avoid !important;
     page-break-inside: avoid !important;
     
-    height: auto !important;
+    /* MODIFICATION: Forcer la hauteur complète pour la vue mensuelle */
+    min-height: 100vh !important;
+    height: 100vh !important;
   }
 
   /* ******************************************************************* */
@@ -1038,16 +1102,20 @@ body {
   
   /* Règle par défaut: Portrait (pour la vue mensuelle) */
   @page {
-    size: A4 portrait !important; 
-    margin: 5mm !important; 
+    size: A4 portrait; 
+    margin: 5mm; 
   }
   
   /* Règle pour forcer le Paysage (pour la vue hebdomadaire) */
+  /* IMPORTANT: Les règles @page nommées doivent être au niveau racine, pas imbriquées */
+  @page landscape {
+    size: A4 landscape;
+    margin: 5mm;
+  }
+  
+  /* Application de la page paysage au clone hebdomadaire */
   .print-clone.print-landscape {
-      @page {
-          size: A4 landscape !important; /* PAYSAGE forcé pour le tableau */
-          margin: 5mm !important;
-      }
+    page: landscape;
   }
   
   /* MODIFICATION: Cibler les conteneurs internes pour la hauteur et largeur */
@@ -1055,10 +1123,11 @@ body {
       padding: 0 !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      height: auto !important; 
+      height: 100% !important; /* MODIFIÉ: Utiliser toute la hauteur disponible */
       display: flex !important; 
       flex-direction: column !important;
-      flex: none !important; 
+      flex: 1 !important; /* MODIFIÉ: S'étirer pour remplir l'espace */
+  } 
   }
   
   /* enlever comportements sticky qui cassent le rendu imprimé */
@@ -1095,8 +1164,8 @@ body {
   
   /* MODIFICATION MAJEURE: Forcer la non-coupure et flexibilité */
   .print-clone .month-calendar-cell {
-      min-height: 1px !important; 
-      padding: 1px !important; 
+      min-height: 80px !important; /* MODIFIÉ: Augmenter la hauteur minimale pour remplir la page */
+      padding: 4px !important; /* MODIFIÉ: Augmenter le padding pour plus d'espace */
       border-width: 1px !important; 
       display: flex !important;
       flex-direction: column !important;
@@ -1125,23 +1194,23 @@ body {
 
   /* MODIFICATION: Rétablissement de l'affichage des horaires et couleurs */
   .print-clone .month-calendar-date {
-      font-size: 12px !important; 
-      margin-bottom: 2px !important; 
+      font-size: 14px !important; /* MODIFIÉ: Augmenter la taille de la date */
+      margin-bottom: 4px !important; /* MODIFIÉ: Plus d'espace sous la date */
   }
   
   .print-clone .month-calendar-schedules {
-      gap: 1px !important; 
+      gap: 2px !important; /* MODIFIÉ: Plus d'espace entre les horaires */
       flex: 1; 
       justify-content: flex-start;
   }
 
   .print-clone .month-schedule-item {
-      font-size: 8px !important; 
-      padding: 1px 2px !important; 
+      font-size: 10px !important; /* MODIFIÉ: Augmenter la taille des horaires */
+      padding: 2px 4px !important; /* MODIFIÉ: Plus de padding */
       white-space: nowrap !important; 
       overflow: hidden !important;
       text-overflow: ellipsis !important; 
-      line-height: 1.1 !important; 
+      line-height: 1.2 !important; /* MODIFIÉ: Plus d'espace vertical */
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
   }
@@ -1214,7 +1283,7 @@ body {
   .print-clone .schedule-table tbody td {
     padding: 4px 6px !important; 
   }
-}
+
 
 /* small utility for printed table wrapper */
 .print-table-container {
