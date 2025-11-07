@@ -65,15 +65,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 16px;
+  margin-bottom: 8px; /* Réduit de 12px à 8px */
+  flex-wrap: nowrap;
+  gap: 20px;
 }
 
 .logo {
   height: 144px;
   width: auto;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .header-title-section h1 {
@@ -81,23 +82,201 @@ body {
   font-weight: 700;
   color: #1f2937;
   flex: 1;
-  min-width: 300px;
   text-align: center;
 }
 
-/* --- Contrôles (Admin et Export) --- */
-.admin-controls {
-  display: flex;
-  flex-direction: row; /* Alignement horizontal par défaut */
-  gap: 12px;
-  align-items: center;
-  margin-left: auto; /* Pousser à droite */
+.header-title-section .icon-admin-btn {
+  flex-shrink: 0;
 }
 
-/* Anciens styles (cachés) */
-.admin-btn, .export-container, .export-select, .export-action-btn {
-  display: none !important;
+/* ========================================
+   NOUVEAU: Styles pour l'entête compacte
+   ======================================== */
+
+.compact-header-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
 }
+
+.nav-controls-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.nav-btn-compact {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn-compact:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.btn-today-compact {
+  padding: 6px 16px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-today-compact:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-calendar-compact {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-calendar-compact:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.view-mode-btn-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  background: white;
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-mode-btn-compact:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.dept-filter-compact {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-btn-compact {
+  padding: 6px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn-compact:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.filter-btn-compact.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.export-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.export-label-compact {
+  font-size: 12px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.dropdown-select-compact {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 140px;
+}
+
+.export-print-btn-compact {
+  padding: 4px 6px;
+  border: 2px solid #10b981;
+  border-radius: 4px;
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.export-print-btn-compact:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.export-print-btn-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+/* Bannières de titre pour semaine et mois */
+.month-title-banner {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  padding: 12px 0;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
 
 /* Bouton d'affichage de vue (conservé mais stylé) */
 .view-mode-btn {
@@ -113,21 +292,13 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 140px;
+  min-width: 120px;
   justify-content: center;
 }
 
 .view-mode-btn:hover {
   background: #3b82f6;
   color: white;
-}
-
-/* NOUVEAU: Positionnement absolu pour le bas à droite du header (Point 1) */
-.view-mode-btn-absolute {
-  position: absolute;
-  bottom: 24px; /* Alignement avec le padding du header-card */
-  right: 24px;  /* Alignement avec le padding du header-card */
-  z-index: 55; /* Doit être au-dessus du contenu du header */
 }
 
 /* Bouton Admin/Déconnexion en icône discrète */
@@ -160,25 +331,35 @@ body {
   color: #10b981;
 }
 
+/* --- Section Export en dessous des départements --- */
+.export-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
 /* --- NOUVEAU: Conteneur d'exportation simplifié --- */
 .export-buttons-direct {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px;
+  gap: 6px; /* Réduit de 8px à 6px */
+  padding: 6px; /* Réduit de 8px à 6px */
   background: #f9fafb;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #e5e7eb;
 }
 
 .export-label {
-  font-size: 14px;
+  font-size: 12px; /* Réduit de 14px à 12px */
   color: #4b5563;
   font-weight: 500;
 }
 
 .export-print-btn {
-  padding: 8px 10px;
+  padding: 6px 8px; /* Réduit de 8px 10px */
   border: 2px solid #10b981;
   border-radius: 6px;
   background: #10b981;
@@ -205,10 +386,10 @@ body {
 /* Sélecteur de département (Stylisation du sélecteur existant) */
 .dropdown-select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 6px 10px; /* Réduit de 8px 12px */
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 12px; /* Réduit de 14px à 12px */
   cursor: pointer;
 }
 
@@ -248,6 +429,19 @@ body {
   animation: slideIn 0.3s ease-out;
 }
 
+.unsaved-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  animation: slideIn 0.3s ease-out;
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -264,8 +458,16 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 20px;
-  gap: 16px;
+  margin-bottom: 8px; /* Réduit de 12px à 8px */
+  gap: 6px; /* Réduit de 8px à 6px */
+}
+
+.nav-buttons-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .nav-buttons {
@@ -336,6 +538,7 @@ body {
   color: #1f2937;
   text-align: center;
   width: 100%;
+  margin-bottom: 0; /* Enlever la marge en bas */
 }
 
 /* Department Filter */
@@ -345,12 +548,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-}
-
-.filter-label {
-  font-weight: 600;
-  color: #4b5563;
-  font-size: 14px;
+  margin-bottom: 8px; /* Réduit de 12px à 8px */
 }
 
 .filter-btn {
@@ -389,17 +587,35 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 24px 24px; /* Augmenté de 20px à 24px pour plus d'espace vertical */
+  min-height: 100px; /* Hauteur minimale pour garantir l'espace */
   background: #f9fafb;
   border-bottom: 2px solid #e5e7eb;
+  position: relative;
+}
+
+.dept-title-group {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px; /* Augmenté de 4px à 6px pour plus d'espace entre titre et semaine */
 }
 
 .dept-header h3 {
-  font-size: 36px;
+  font-size: 28px; /* Réduit de 36px à 28px */
   font-weight: 700;
   color: #1f2937;
-  flex: 1;
-  text-align: center;
+  margin: 0;
+  white-space: nowrap; /* Empêche le retour à la ligne */
+}
+
+.week-subtitle {
+  font-size: 15px; /* Légèrement réduit de 16px à 15px */
+  font-weight: 500;
+  color: #6b7280;
 }
 
 .btn-add-emp {
@@ -415,6 +631,9 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
+  z-index: 1;
+  margin-left: auto; /* Pousse le bouton à droite */
 }
 
 .btn-add-emp:hover {
@@ -683,7 +902,7 @@ body {
 .modal-buttons {
   display: flex;
   gap: 12px;
-  justify-content: flex-end;
+  justify-content: center; /* Changé de flex-end à center */
   margin-top: 20px;
 }
 
@@ -907,21 +1126,50 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 4px 6px;
-  background: #dbeafe;
+  background: #dbeafe; /* Bleu par défaut (matin) */
   border-radius: 4px;
   font-size: 11px;
   gap: 4px;
 }
 
-.month-schedule-item.nd-schedule {
-  background: #fee2e2;
+/* Couleurs pour les différents horaires dans la vue mensuelle */
+.month-schedule-item.schedule-morning {
+  background: #dbeafe; /* Bleu clair - Matin */
 }
 
-.month-schedule-item.nd-schedule .emp-name-short {
+.month-schedule-item.schedule-afternoon {
+  background: #fef3c7; /* Jaune clair - Après-midi */
+}
+
+.month-schedule-item.schedule-afternoon .emp-name-short {
+  color: #92400e;
+}
+
+.month-schedule-item.schedule-afternoon .schedule-time {
+  color: #78350f;
+}
+
+.month-schedule-item.schedule-evening {
+  background: #fed7aa; /* Orange clair - Soir */
+}
+
+.month-schedule-item.schedule-evening .emp-name-short {
+  color: #9a3412;
+}
+
+.month-schedule-item.schedule-evening .schedule-time {
+  color: #7c2d12;
+}
+
+.month-schedule-item.schedule-nd {
+  background: #fee2e2; /* Rouge clair - N/D */
+}
+
+.month-schedule-item.schedule-nd .emp-name-short {
   color: #991b1b;
 }
 
-.month-schedule-item.nd-schedule .schedule-time {
+.month-schedule-item.schedule-nd .schedule-time {
   color: #991b1b;
 }
 
@@ -1179,6 +1427,13 @@ body {
       background: white !important;
   }
   
+  /* Suppression de la surbrillance du jour actuel (bordure bleue) */
+  .print-clone .month-calendar-cell.today-cell {
+      border-color: #e5e7eb !important;
+      border-width: 2px !important;
+      background: white !important;
+  }
+  
   .print-clone .month-calendar-cell,
   .print-clone .month-schedule-item { 
       page-break-inside: avoid !important; 
@@ -1283,7 +1538,6 @@ body {
   .print-clone .schedule-table tbody td {
     padding: 4px 6px !important; 
   }
-
 
 /* small utility for printed table wrapper */
 .print-table-container {

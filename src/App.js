@@ -55,9 +55,18 @@ const ScheduleManager = () => {
   const [monthViewDept, setMonthViewDept] = useState("Proposé à l'accueil"); // Département pour vue mensuelle
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [, forceUpdate] = useState(0);
+  const [unsavedChanges, setUnsavedChanges] = useState(false); // Suivre les changements non sauvegardés
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+  // Fonction utilitaire pour convertir une date en string local (évite les problèmes de fuseau horaire)
+  const getLocalDateString = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   useEffect(() => {
     loadData();
@@ -233,9 +242,23 @@ const ScheduleManager = () => {
   };
 
   const handleAdminLogout = () => {
+    // Sauvegarder tous les changements en arrière-plan
+    if (unsavedChanges) {
+      // Lancer la sauvegarde sans attendre
+      saveAllSchedules(schedules)
+        .then(() => {
+          console.log('Modifications sauvegardées avec succès');
+        })
+        .catch((error) => {
+          console.error('Erreur lors de la sauvegarde:', error);
+        });
+    }
+    
+    // Se déconnecter immédiatement
     setIsAdmin(false);
     setSelectedCell(null);
     setCopiedSchedule(null);
+    setUnsavedChanges(false);
   };
 
   const addEmployee = async () => {
@@ -320,41 +343,38 @@ const ScheduleManager = () => {
       formattedValue = ''; // Chaîne vide pour les quarts non définis
     }
 
-    const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    const key = `${dept}-${employee}-${getLocalDateString(day)}`;
 
     const newSchedules = { ...schedules, [key]: { schedule: formattedValue } };
     setSchedules(newSchedules);
+    setUnsavedChanges(true); // Marquer qu'il y a des changements non sauvegardés
 
-    await saveSchedule(key, { schedule: formattedValue });
-
-    setShowSaveConfirmation(true);
-    setTimeout(() => setShowSaveConfirmation(false), 2000);
+    // Ne plus sauvegarder immédiatement
+    // La sauvegarde se fera lors de la déconnexion admin
   };
 
   const pasteSchedule = async (dept, employee, day) => {
     if (copiedSchedule !== null) {
-      const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+      const key = `${dept}-${employee}-${getLocalDateString(day)}`;
       const newSchedules = { ...schedules, [key]: { schedule: copiedSchedule } };
       setSchedules(newSchedules);
-      await saveSchedule(key, { schedule: copiedSchedule });
+      setUnsavedChanges(true); // Marquer qu'il y a des changements non sauvegardés
 
-      setShowSaveConfirmation(true);
-      setTimeout(() => setShowSaveConfirmation(false), 2000);
+      // Ne plus sauvegarder immédiatement
     }
   };
 
   const deleteSchedule = async (dept, employee, day) => {
-    const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    const key = `${dept}-${employee}-${getLocalDateString(day)}`;
     const newSchedules = { ...schedules, [key]: { schedule: '' } };
     setSchedules(newSchedules);
-    await saveSchedule(key, { schedule: '' });
+    setUnsavedChanges(true); // Marquer qu'il y a des changements non sauvegardés
 
-    setShowSaveConfirmation(true);
-    setTimeout(() => setShowSaveConfirmation(false), 2000);
+    // Ne plus sauvegarder immédiatement
   };
 
   const getSchedule = (dept, employee, day) => {
-    const key = `${dept}-${employee}-${day.toISOString().split('T')[0]}`;
+    const key = `${dept}-${employee}-${getLocalDateString(day)}`;
     return schedules[key] || { schedule: '' };
   };
 
@@ -385,8 +405,8 @@ const ScheduleManager = () => {
     departments.forEach(dept => {
       (employees[dept] || []).forEach(emp => {
         weekDays.forEach((currentDay, idx) => {
-          const currentKey = `${dept}-${emp}-${currentDay.toISOString().split('T')[0]}`;
-          const nextKey = `${dept}-${emp}-${nextWeekDays[idx].toISOString().split('T')[0]}`;
+          const currentKey = `${dept}-${emp}-${getLocalDateString(currentDay)}`;
+          const nextKey = `${dept}-${emp}-${getLocalDateString(nextWeekDays[idx])}`;
 
           const currentSchedule = schedules[currentKey] || { schedule: '' };
           newSchedules[nextKey] = { ...currentSchedule };
@@ -395,7 +415,7 @@ const ScheduleManager = () => {
     });
 
     setSchedules(newSchedules);
-    await saveAllSchedules(newSchedules);
+    setUnsavedChanges(true); // Marquer qu'il y a des changements non sauvegardés
     setShowCopyConfirm(true);
   };
 
@@ -705,75 +725,80 @@ const ScheduleManager = () => {
       <div className="app-container">
         <div className="main-content">
           <div className="header-card sticky-header">
+            {/* Ligne 1: Logo - Titre - Bouton Admin */}
             <div className="header-title-section">
               <img src={logo} alt="Le Marthelinois" className="logo" />
               <h1>Gestionnaire des horaires</h1>
-              <div className="admin-controls">
-                <div className="export-buttons-direct">
-                  <span className="export-label">Imprimer le calendrier:</span>
-                  <select
-                    value={selectedExportDept}
-                    onChange={(e) => setSelectedExportDept(e.target.value)}
-                    className="dropdown-select"
-                    style={{ width: '180px' }}
-                  >
-                    <option value="">Choisir un département</option>
-                    {departments.map(dept => (
-                      <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                  </select>
+              <button
+                onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
+                className="icon-admin-btn"
+                title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
+              >
+                {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
+              </button>
+            </div>
+
+            {/* Ligne 2: Tous les contrôles sur une seule ligne compacte */}
+            <div className="compact-header-row">
+              {/* Navigation */}
+              <div className="nav-controls-group">
+                <button onClick={() => changeMonth(-1)} className="nav-btn-compact"><ChevronLeft size={18} /></button>
+                <button onClick={goToToday} className="btn-today-compact">Aujourd'hui</button>
+                <button onClick={() => changeMonth(1)} className="nav-btn-compact"><ChevronRight size={18} /></button>
+                <button onClick={() => setViewMode('week')} className="view-mode-btn-compact">📆 Hebdomadaire</button>
+              </div>
+
+              {/* Filtres de départements */}
+              <div className="dept-filter-compact">
+                {departments.map(dept => (
                   <button
-                    onClick={() => {
-                      if (selectedExportDept) {
-                        printMonthSchedule(selectedExportDept);
-                      }
-                    }}
-                    className="export-print-btn"
-                    disabled={!selectedExportDept}
-                    title="Imprimer le département sélectionné en vue mensuelle"
+                    key={dept}
+                    onClick={() => setMonthViewDept(dept)}
+                    className={`filter-btn-compact ${monthViewDept === dept ? 'active' : ''}`}
                   >
-                    <Printer size={20} />
+                    {dept.replace("Proposé à l'accueil", "Accueil").replace("Proposé aux départs", "Départs").replace("Proposé au terrain", "Terrain").replace("Proposé aux carts", "Carts")}
                   </button>
-                </div>
+                ))}
+              </div>
 
-                <button
-                  onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
-                  className="icon-admin-btn"
-                  title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
+              {/* Export */}
+              <div className="export-compact">
+                <span className="export-label-compact">Imprimer:</span>
+                <select
+                  value={selectedExportDept}
+                  onChange={(e) => setSelectedExportDept(e.target.value)}
+                  className="dropdown-select-compact"
                 >
-                  {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
+                  <option value="">Département</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => {
+                    if (selectedExportDept) {
+                      printMonthSchedule(selectedExportDept);
+                    }
+                  }}
+                  className="export-print-btn-compact"
+                  disabled={!selectedExportDept}
+                >
+                  <Printer size={16} />
                 </button>
               </div>
             </div>
+          </div>
 
-            <div className="nav-section">
-              <h2 className="week-title">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</h2>
-              <div className="nav-buttons">
-                <button onClick={() => changeMonth(-1)} className="nav-btn"><ChevronLeft size={20} /> Mois précédent</button>
-                <button onClick={goToToday} className="btn-today">Aujourd'hui</button>
-                <button onClick={() => changeMonth(1)} className="nav-btn">Mois suivant <ChevronRight size={20} /></button>
-              </div>
+          {/* Indicateurs flottants */}
+          {unsavedChanges && isAdmin && (
+            <div className="unsaved-indicator">
+              ⚠️ Modifications non sauvegardées - Déconnectez-vous du mode admin pour sauvegarder
             </div>
+          )}
 
-            <div className="dept-filter">
-              <span className="filter-label">Département:</span>
-              {departments.map(dept => (
-                <button
-                  key={dept}
-                  onClick={() => setMonthViewDept(dept)}
-                  className={`filter-btn ${monthViewDept === dept ? 'active' : ''}`}
-                >
-                  {dept}
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={() => setViewMode('week')}
-              className="view-mode-btn view-mode-btn-absolute"
-            >
-              📆 Hebdomadaire
-            </button>
+          {/* Titre du mois au-dessus du calendrier */}
+          <div className="month-title-banner">
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </div>
 
           <div className="month-calendar-view">
@@ -797,9 +822,9 @@ const ScheduleManager = () => {
                       {employeesWithSchedules.map((emp, empIdx) => {
                         const sched = getSchedule(monthViewDept, emp, day);
                         if (sched.schedule && sched.schedule !== '') {
-                          const isND = sched.schedule === 'N/D';
+                          const colorClass = getScheduleColorClass(sched.schedule);
                           return (
-                            <div key={empIdx} className={`month-schedule-item ${isND ? 'nd-schedule' : ''}`}>
+                            <div key={empIdx} className={`month-schedule-item ${colorClass}`}>
                               <span className="emp-name-short">{emp.split(' ')[0]}</span>
                               <span className="schedule-time">{sched.schedule}</span>
                             </div>
@@ -827,6 +852,7 @@ const ScheduleManager = () => {
                 onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
                 placeholder="Mot de passe"
                 className="modal-input"
+                autoFocus
               />
               <div className="modal-buttons">
                 <button onClick={handleAdminLogin} className="modal-btn primary">Connexion</button>
@@ -844,92 +870,95 @@ const ScheduleManager = () => {
     <div className="app-container">
       <div className="main-content">
         <div className="header-card sticky-header">
+          {/* Ligne 1: Logo - Titre - Bouton Admin */}
           <div className="header-title-section">
             <img src={logo} alt="Le Marthelinois" className="logo" />
             <h1>Gestionnaire des horaires</h1>
-            {copiedSchedule && isAdmin && (
-              <div className="copied-indicator">
-                📋 Horaire copié : {copiedSchedule}
-                <button onClick={() => setCopiedSchedule(null)} className="clear-copy-btn">✕</button>
-              </div>
-            )}
-            {showSaveConfirmation && (
-              <div className="save-confirmation">
-                ✓ Sauvegardé
-              </div>
-            )}
-            <div className="admin-controls">
-              <div className="export-buttons-direct">
-                <span className="export-label">Imprimer l'horaire:</span>
-                <select
-                  value={selectedExportDept}
-                  onChange={(e) => setSelectedExportDept(e.target.value)}
-                  className="dropdown-select"
-                  style={{ width: '180px' }}
-                >
-                  <option value="">Choisir un département</option>
-                  {departments.map(dept => (
-                    <option key={dept} value={dept}>{dept}</option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => {
-                    if (selectedExportDept) {
-                      printSchedule(selectedExportDept);
-                    }
-                  }}
-                  className="export-print-btn"
-                  disabled={!selectedExportDept}
-                  title="Imprimer le département sélectionné"
-                >
-                  <Printer size={20} />
-                </button>
-              </div>
-
-              <button
-                onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
-                className="icon-admin-btn"
-                title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
-              >
-                {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="nav-section">
-            <h2 className="week-title">Semaine du {getWeekString()}</h2>
-            <div className="nav-buttons">
-              <button onClick={goToPreviousWeek} className="nav-btn"><ChevronLeft size={20} /> Précédente</button>
-              <button onClick={goToToday} className="btn-today">Aujourd'hui</button>
-              <button onClick={goToNextWeek} className="nav-btn">Suivante <ChevronRight size={20} /></button>
-              <button onClick={() => setShowCalendar(!showCalendar)} className="btn-calendar"><Calendar size={24} /></button>
-            </div>
-          </div>
-
-          <div className="dept-filter">
-            <span className="filter-label">Afficher:</span>
-            <button onClick={() => setVisibleDepartment('Tous')} className={`filter-btn ${visibleDepartment === 'Tous' ? 'active' : ''}`}>
-              Tous les départements
+            <button
+              onClick={() => isAdmin ? handleAdminLogout() : setShowPasswordModal(true)}
+              className="icon-admin-btn"
+              title={isAdmin ? 'Déconnexion Admin' : 'Mode Admin'}
+            >
+              {isAdmin ? <Unlock size={20} /> : <Lock size={20} />}
             </button>
-            {departments.map(dept => (
-              <button key={dept} onClick={() => setVisibleDepartment(dept)} className={`filter-btn ${visibleDepartment === dept ? 'active' : ''}`}>
-                {dept}
-              </button>
-            ))}
           </div>
 
-          <button
-            onClick={() => setViewMode('month')}
-            className="view-mode-btn view-mode-btn-absolute"
-          >
-            📅 Mensuel
-          </button>
+          {/* Ligne 2: Tous les contrôles sur une seule ligne compacte */}
+          <div className="compact-header-row">
+            {/* Navigation */}
+            <div className="nav-controls-group">
+              <button onClick={goToPreviousWeek} className="nav-btn-compact"><ChevronLeft size={18} /></button>
+              <button onClick={goToToday} className="btn-today-compact">Aujourd'hui</button>
+              <button onClick={goToNextWeek} className="nav-btn-compact"><ChevronRight size={18} /></button>
+              <button onClick={() => setShowCalendar(!showCalendar)} className="btn-calendar-compact"><Calendar size={20} /></button>
+              <button onClick={() => setViewMode('month')} className="view-mode-btn-compact">📅 Mensuel</button>
+            </div>
+
+            {/* Filtres de départements */}
+            <div className="dept-filter-compact">
+              <button onClick={() => setVisibleDepartment('Tous')} className={`filter-btn-compact ${visibleDepartment === 'Tous' ? 'active' : ''}`}>
+                Tous
+              </button>
+              {departments.map(dept => (
+                <button key={dept} onClick={() => setVisibleDepartment(dept)} className={`filter-btn-compact ${visibleDepartment === dept ? 'active' : ''}`}>
+                  {dept.replace("Proposé à l'accueil", "Accueil").replace("Proposé aux départs", "Départs").replace("Proposé au terrain", "Terrain").replace("Proposé aux carts", "Carts")}
+                </button>
+              ))}
+            </div>
+
+            {/* Export */}
+            <div className="export-compact">
+              <span className="export-label-compact">Imprimer:</span>
+              <select
+                value={selectedExportDept}
+                onChange={(e) => setSelectedExportDept(e.target.value)}
+                className="dropdown-select-compact"
+              >
+                <option value="">Département</option>
+                {departments.map(dept => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  if (selectedExportDept) {
+                    printSchedule(selectedExportDept);
+                  }
+                }}
+                className="export-print-btn-compact"
+                disabled={!selectedExportDept}
+              >
+                <Printer size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* Indicateurs flottants */}
+          {unsavedChanges && isAdmin && (
+            <div className="unsaved-indicator">
+              ⚠️ Modifications non sauvegardées - Déconnectez-vous du mode admin pour sauvegarder
+            </div>
+          )}
+          {copiedSchedule && isAdmin && (
+            <div className="copied-indicator">
+              📋 Horaire copié : {copiedSchedule}
+              <button onClick={() => setCopiedSchedule(null)} className="clear-copy-btn">✕</button>
+            </div>
+          )}
+          {showSaveConfirmation && (
+            <div className="save-confirmation">
+              ✓ Sauvegardé
+            </div>
+          )}
         </div>
 
         {departments.filter(dept => visibleDepartment === 'Tous' || visibleDepartment === dept).map(dept => (
           <div key={dept} className="dept-card">
             <div className="dept-header">
-              <h3>{dept}</h3>
+              <div className="dept-title-group">
+                <h3>{dept}</h3>
+                <span className="week-subtitle">Semaine du {getWeekString()}</span>
+              </div>
               {isAdmin && (
                 <button onClick={() => { setSelectedDepartment(dept); setShowAddEmployee(true); }} className="btn-add-emp">
                   <Plus size={20} /> Ajouter Employé
@@ -959,7 +988,7 @@ const ScheduleManager = () => {
                         const isSelected = selectedCell &&
                           selectedCell.dept === dept &&
                           selectedCell.emp === emp &&
-                          selectedCell.day.toISOString() === day.toISOString();
+                          getLocalDateString(selectedCell.day) === getLocalDateString(day);
 
                         return (
                           <td
@@ -976,7 +1005,7 @@ const ScheduleManager = () => {
                                 {editingCell &&
                                   editingCell.dept === dept &&
                                   editingCell.emp === emp &&
-                                  editingCell.day.toISOString() === day.toISOString() ? (
+                                  getLocalDateString(editingCell.day) === getLocalDateString(day) ? (
                                   <input
                                     type="text"
                                     value={editingValue}
