@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, ChevronRight as ChevronRightIcon, Clock, Save, Undo2, Redo2, AlertCircle } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, Clock, Save, Undo2, Redo2 } from 'lucide-react';
 import { db } from './firebaseConfig';
-import { collection, getDocs, setDoc, doc, addDoc, deleteDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
 import './App.css';
 import logo from './LeMarthelinois.png';
 import './club_house.webp';
@@ -61,7 +61,6 @@ const ScheduleManager = () => {
   const [employees, setEmployees] = useState({});
   const [schedules, setSchedules] = useState({});
   const schedulesRef = useRef(schedules);
-  const dropdownRef = useRef(null);
 
   useEffect(() => {
     schedulesRef.current = schedules;
@@ -84,9 +83,6 @@ const ScheduleManager = () => {
   const [viewMode, setViewMode] = useState('week');
   const [weekDays, setWeekDays] = useState([]);
   const [monthViewDept, setMonthViewDept] = useState("Proposé à l'accueil");
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const [, forceUpdate] = useState(0);
-  const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -474,18 +470,6 @@ const ScheduleManager = () => {
   }, [currentDate, viewMode]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowExportMenu(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdownRef]);
-
-  useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isAdmin) return;
       if (editingCell) return;
@@ -597,7 +581,6 @@ const ScheduleManager = () => {
       for (const [key, value] of Object.entries(newSchedules)) {
         await setDoc(doc(db, 'schedules', key), value);
       }
-      setUnsavedChanges(false);
       setShowSaveConfirmation(true);
       setTimeout(() => setShowSaveConfirmation(false), 2000);
     } catch (error) {
@@ -653,7 +636,6 @@ const ScheduleManager = () => {
     };
     
     setSchedules(newSchedules);
-    setUnsavedChanges(true);
     
     // Ajouter à l'historique
     addToHistory('updateSchedule', { schedules: newSchedules, previous: oldSchedules });
@@ -729,42 +711,6 @@ const ScheduleManager = () => {
     }
   };
 
-  const copyWeekToNext = async () => {
-    const currentWeekStart = getWeekDays(currentDate)[0];
-    const nextWeekStart = new Date(currentWeekStart);
-    nextWeekStart.setDate(nextWeekStart.getDate() + 7);
-
-    const newSchedules = { ...schedules };
-
-    for (let i = 0; i < 7; i++) {
-      const currentDay = new Date(currentWeekStart);
-      currentDay.setDate(currentWeekStart.getDate() + i);
-
-      const nextDay = new Date(nextWeekStart);
-      nextDay.setDate(nextWeekStart.getDate() + i);
-
-      departments.forEach(dept => {
-        (employees[dept] || []).forEach(emp => {
-          const currentKey = `${dept}-${emp}-${getLocalDateString(currentDay)}`;
-          const nextKey = `${dept}-${emp}-${getLocalDateString(nextDay)}`;
-
-          if (schedules[currentKey]) {
-            newSchedules[nextKey] = { schedule: schedules[currentKey].schedule };
-          }
-        });
-      });
-    }
-
-    setSchedules(newSchedules);
-    await saveSchedules(newSchedules);
-    
-    // Ajouter à l'historique
-    addToHistory('copyWeek', { schedules: newSchedules });
-
-    setShowCopyConfirm(true);
-    setTimeout(() => setShowCopyConfirm(false), 2000);
-  };
-
   const changeWeek = (direction) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + (direction * 7));
@@ -785,7 +731,6 @@ const ScheduleManager = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(firstDay.getDate() - firstDay.getDay());
 
@@ -825,13 +770,6 @@ const ScheduleManager = () => {
     const nextWeekDate = new Date(currentDate);
     nextWeekDate.setDate(nextWeekDate.getDate() + 7);
     return getWeekDays(nextWeekDate);
-  };
-
-  const getMonthString = () => {
-    const days = getWeekDays(currentDate);
-    const start = days[0];
-    const end = days[days.length - 1];
-    return `${start.getDate()} ${monthNames[start.getMonth()]} - ${end.getDate()} ${monthNames[end.getMonth()]} ${end.getFullYear()}`;
   };
 
   const getMonthName = () => {
@@ -1050,17 +988,6 @@ const ScheduleManager = () => {
     });
 
     return container;
-  };
-
-  const formatScheduleForPrint = (schedule) => {
-    if (!schedule || schedule === 'N/D' || schedule === '') return schedule;
-    const match = schedule.match(/(\d{1,2})h?(\d{2})?-(\d{1,2})h?(\d{2})?/);
-    if (match) {
-      const start = `${match[1]}h${match[2] || '00'}`;
-      const end = `${match[3]}h${match[4] || '00'}`;
-      return `${start}-${end}`;
-    }
-    return schedule;
   };
 
   if (loading) {
@@ -1432,7 +1359,6 @@ const ScheduleManager = () => {
 
             <div className="month-calendar-grid">
               {weekDays.map((day, idx) => {
-                const dateStr = getLocalDateString(day);
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                 const isToday = day.toDateString() === new Date().toDateString();
                 const holiday = isHoliday(day);
