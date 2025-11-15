@@ -23,11 +23,10 @@ body {
   padding: 20px;
 }
 
-/* Rendre le header sticky */
 .header-card.sticky-header {
   position: sticky;
   top: 0;
-  z-index: 50; /* Doit être au-dessus du reste du contenu (mais bien en dessous des modals) */
+  z-index: 50;
 }
 
 .header-card {
@@ -38,7 +37,6 @@ body {
   margin-bottom: 24px;
   position: relative;
   overflow: hidden;
-  z-index: 50; /* explicit to avoid unexpected stacking */
 }
 
 .header-card::before {
@@ -66,15 +64,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 16px;
+  margin-bottom: 8px;
+  flex-wrap: nowrap;
+  gap: 20px;
 }
 
 .logo {
   height: 144px;
   width: auto;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .header-title-section h1 {
@@ -82,56 +81,229 @@ body {
   font-weight: 700;
   color: #1f2937;
   flex: 1;
-  min-width: 300px;
   text-align: center;
 }
 
-/* --- Contrôles (Admin et Export) --- */
-.admin-controls {
+.header-title-section .icon-admin-btn {
+  flex-shrink: 0;
+}
+
+/* Styles pour l'entête compacte */
+.compact-header-row {
   display: flex;
-  flex-direction: row; /* Alignement horizontal par défaut */
   gap: 12px;
   align-items: center;
-  margin-left: auto; /* Pousser à droite */
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 8px 0;
+  border-top: 1px solid #e5e7eb;
 }
 
-/* Anciens styles (cachés) */
-.admin-btn, .export-container, .export-select, .export-action-btn {
-  display: none !important;
+.nav-controls-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-/* Bouton d'affichage de vue (conservé mais stylé) */
-.view-mode-btn {
+.nav-btn-compact {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border: 2px solid #3b82f6;
-  border-radius: 8px;
+  padding: 6px 10px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
   background: white;
-  color: #3b82f6;
-  font-size: 14px;
+  color: #374151;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 140px;
-  justify-content: center;
 }
 
-.view-mode-btn:hover {
+.nav-btn-compact:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.nav-btn-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-today-compact {
+  padding: 6px 16px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  background: #3b82f6;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-today-compact:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-calendar-compact {
+  display: flex;
+  align-items: center;
+  padding: 6px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-calendar-compact:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.view-mode-btn-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  background: white;
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-mode-btn-compact:hover {
   background: #3b82f6;
   color: white;
 }
 
-/* NOUVEAU: Positionnement absolu pour le bas à droite du header (Point 1) */
-.view-mode-btn-absolute {
-  position: absolute;
-  bottom: 24px; /* Alignement avec le padding du header-card */
-  right: 24px;  /* Alignement avec le padding du header-card */
-  z-index: 55; /* Doit être au-dessus du contenu du header */
+.dept-filter-compact {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-/* Bouton Admin/Déconnexion en icône discrète */
+.filter-btn-compact {
+  padding: 6px 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn-compact:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.filter-btn-compact.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.export-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f9fafb;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.export-label-compact {
+  font-size: 12px;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.dropdown-select-compact {
+  padding: 4px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 140px;
+}
+
+.export-print-btn-compact {
+  padding: 4px 6px;
+  border: 2px solid #10b981;
+  border-radius: 4px;
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.export-print-btn-compact:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.export-print-btn-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+.export-sms-btn-compact {
+  padding: 4px 6px;
+  border: 2px solid #10b981;
+  border-radius: 4px;
+  background: #10b981;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.export-sms-btn-compact:hover:not(:disabled) {
+  background: #059669;
+  border-color: #059669;
+}
+
+.export-sms-btn-compact:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #d1d5db;
+  border-color: #d1d5db;
+  color: #9ca3af;
+}
+
+/* Bannières de titre */
+.month-title-banner {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  padding: 12px 0;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Bouton Admin */
 .icon-admin-btn {
   padding: 10px;
   border-radius: 8px;
@@ -151,266 +323,46 @@ body {
   color: #3b82f6;
 }
 
-/* Style spécifique pour l'état Déconnecté (Lock) */
 .icon-admin-btn svg[data-lucide="lock"] {
   color: #4b5563;
 }
 
-/* Style spécifique pour l'état Connecté (Unlock) */
 .icon-admin-btn svg[data-lucide="unlock"] {
   color: #10b981;
 }
 
-/* --- NOUVEAU: Conteneur d'exportation simplifié --- */
-.export-buttons-direct {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  background: #f9fafb;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-}
-
-.export-label {
-  font-size: 14px;
-  color: #4b5563;
-  font-weight: 500;
-}
-
-.export-print-btn {
-  padding: 8px 10px;
-  border: 2px solid #10b981;
-  border-radius: 6px;
-  background: #10b981;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-}
-
-.export-print-btn:hover:not(:disabled) {
-  background: #059669;
-  border-color: #059669;
-}
-
-.export-print-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: #d1d5db;
-  border-color: #d1d5db;
-  color: #9ca3af;
-}
-
-/* Sélecteur de département (Stylisation du sélecteur existant) */
-.dropdown-select {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-
-/* Styles conservés de l'ancienne version */
-.copied-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #dbeafe;
-  color: #1e40af;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.clear-copy-btn {
-  background: none;
-  border: none;
-  color: #1e40af;
-  cursor: pointer;
-  font-size: 16px;
-  padding: 0 4px;
-}
-
-.save-confirmation {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: #dcfce7;
-  color: #166534;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Navigation Section */
-.nav-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-  gap: 16px;
-}
-
-.nav-buttons {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.nav-btn:hover {
-  background: #f9fafb;
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.btn-today {
-  padding: 8px 20px;
-  border: 2px solid #3b82f6;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-today:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-}
-
-.btn-calendar {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.btn-calendar:hover {
-  background: #f9fafb;
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.week-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1f2937;
-  text-align: center;
-  width: 100%;
-}
-
-/* Department Filter */
-.dept-filter {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.filter-label {
-  font-weight: 600;
-  color: #4b5563;
-  font-size: 14px;
-}
-
-.filter-btn {
-  padding: 8px 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.filter-btn:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.filter-btn.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-}
-
-/* Department Cards */
-.dept-card {
+/* Section horaires */
+.schedule-section {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 24px;
   margin-bottom: 24px;
-  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.dept-header {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  background: #f9fafb;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 2px solid #e5e7eb;
 }
 
-.dept-header h3 {
-  font-size: 36px;
+.section-title {
+  font-size: 20px;
   font-weight: 700;
   color: #1f2937;
-  flex: 1;
-  text-align: center;
 }
 
 .btn-add-emp {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 8px 16px;
-  border: none;
+  border: 2px solid #10b981;
   border-radius: 8px;
-  background: #3b82f6;
+  background: #10b981;
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -419,131 +371,150 @@ body {
 }
 
 .btn-add-emp:hover {
-  background: #2563eb;
+  background: #059669;
+  border-color: #059669;
 }
 
-/* Table Container */
+/* Tableau des horaires */
 .table-container {
   overflow-x: auto;
-  padding: 0;
+  margin-bottom: 16px;
 }
 
 .schedule-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* Rendre l'en-tête de la colonne des jours et de la colonne Employé - removed sticky to allow normal scrolling */
 .schedule-table thead th {
-  background: #374151;
+  background: #47494d;
   color: white;
   padding: 12px 8px;
   text-align: center;
   font-weight: 600;
-  font-size: 14px;
-  border: 1px solid #4b5563;
-  /* position: sticky removed so header scrolls with table */
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.schedule-table thead th:first-child {
-  text-align: left;
-  padding-left: 16px;
-  min-width: 150px;
+.schedule-table thead th.sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: #47494d;
 }
 
-.date-small {
+.day-header {
+  min-width: 140px;
+}
+
+.today-header {
+  background: #3b82f6 !important;
+}
+
+.day-name {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.day-date {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   opacity: 0.9;
+}
+
+/* NOUVEAU: Badge jour férié */
+.holiday-badge {
+  background: #fbbf24;
+  color: #78350f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+  display: inline-block;
 }
 
 .schedule-table tbody td {
   padding: 8px;
-  border: 1px solid #e5e7eb;
   text-align: center;
-}
-
-/* Sticky employee column disabled to avoid split (allows header to scroll smoothly) */
-.sticky-col {
-  position: static !important;
-  left: auto !important;
-  z-index: auto !important;
-  box-shadow: none !important;
-}
-
-.schedule-table thead th.sticky-col {
-  z-index: auto;
-}
-
-.emp-name {
-  font-weight: 600;
-  color: #1f2937;
-  text-align: left !important;
-  padding-left: 16px !important;
-  background: #f9fafb;
-}
-
-/* Schedule cell colors */
-.schedule-cell {
+  border: 1px solid #e5e7eb;
+  vertical-align: middle;
   position: relative;
-  min-width: 120px;
-  cursor: pointer;
-  transition: background 0.2s;
 }
 
-.schedule-cell:hover {
-  background: #f9fafb;
+.sticky-col {
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 5;
+  font-weight: 600;
+  text-align: left !important;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.05);
 }
 
-.schedule-cell.schedule-morning {
-  background: #dbeafe; /* Bleu clair - Matin */
+.employee-cell {
+  min-width: 150px;
 }
 
-.schedule-cell.schedule-afternoon {
-  background: #fef3c7; /* Jaune clair - Après-midi */
-}
-
-.schedule-cell.schedule-evening {
-  background: #fed7aa; /* Orange clair - Soir */
-}
-
-.schedule-cell.schedule-nd {
-  background: #fee2e2; /* Rouge clair - N/D */
-}
-
-.schedule-input-container {
-  width: 100%;
-}
-
-.btn-edit-cell {
-  padding: 6px 6px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
+.schedule-cell {
+  min-width: 140px;
   background: white;
   cursor: pointer;
-  font-size: 13px;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
 }
 
-.btn-edit-cell:hover {
-  background: #f3f4f6;
+/* NOUVEAU: Style pour drag & drop */
+.schedule-cell[draggable="true"]:hover {
+  cursor: grab;
+  background: #f0f9ff;
   border-color: #3b82f6;
+}
+
+.schedule-cell[draggable="true"]:active {
+  cursor: grabbing;
+  opacity: 0.7;
+}
+
+.schedule-cell.selected-cell {
+  background: #dbeafe;
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Couleurs des quarts de travail */
+.nd-cell {
+  background: #fecaca !important; /* Rouge pour N/D */
+  color: #991b1b !important;
+}
+
+.morning-shift {
+  background: #dbeafe !important; /* Bleu pour quart de matin */
+  color: #1e40af !important;
+}
+
+.afternoon-shift {
+  background: #fef08a !important; /* Jaune pour quart d'après-midi */
+  color: #854d0e !important;
+}
+
+.time-display {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2937;
 }
 
 .schedule-input {
   width: 100%;
-  padding: 6px 4px;
-  border: 1px solid #d1d5db;
+  padding: 4px;
+  border: 2px solid #e5e7eb;
   border-radius: 4px;
-  font-size: 13px;
+  font-size: 12px;
   text-align: center;
   transition: all 0.2s;
-  color: #1f2937;
-  background-color: white;
 }
 
 .schedule-input:focus {
@@ -554,42 +525,79 @@ body {
 
 .schedule-select {
   cursor: pointer;
-  background-color: white;
-  appearance: auto;
-  color: #1f2937;
-  font-weight: 500;
+  background: white;
 }
 
-.time-display {
-  padding: 8px;
-  font-size: 14px;
-  color: #1f2937;
-  font-weight: 500;
-}
-
-.btn-delete {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border: none;
-  border-radius: 6px;
-  background: #fee2e2;
-  color: #dc2626;
+.btn-edit-cell {
+  padding: 2px 6px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
   cursor: pointer;
+  font-size: 12px;
   transition: all 0.2s;
 }
 
-.btn-delete:hover {
-  background: #dc2626;
-  color: white;
+.btn-edit-cell:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
 }
 
-/* Copy Section */
+/* NOUVEAU: Bouton commentaire */
+.btn-comment {
+  padding: 2px 6px;
+  background: #e5e7eb;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.btn-comment:hover {
+  background: #fbbf24;
+  color: white;
+  border-color: #f59e0b;
+}
+
+/* Container for cell action buttons */
+.cell-actions {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+
+.cell-actions select {
+  flex: 1;
+  min-width: 0;
+}
+
+.btn-delete {
+  padding: 6px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete:hover {
+  background: #fecaca;
+  border-color: #fca5a5;
+}
+
+/* Section copie */
 .copy-section {
-  padding: 16px 24px;
-  background: #f9fafb;
-  border-top: 2px solid #e5e7eb;
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .btn-copy {
@@ -597,111 +605,424 @@ body {
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  border: none;
+  border: 2px solid #3b82f6;
   border-radius: 8px;
-  background: #10b981;
+  background: #3b82f6;
   color: white;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-/* Modals - améliorations pour visibilité et focus (fix stacking/context) */
+.btn-copy:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Modals */
 .modal-overlay {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(0,0,0,0.55) !important;
-  z-index: 100000 !important; /* Placé très au-dessus pour écraser tout stacking context */
-  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal {
-  position: relative !important;
-  z-index: 100001 !important;
-  background: #ffffff !important;
-  border-radius: 12px !important;
-  padding: 20px !important;
-  max-width: 480px !important;
-  width: calc(100% - 32px) !important;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.45) !important;
-  border: 1px solid rgba(0,0,0,0.06) !important;
-  display: block !important;
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s;
 }
 
-/* Titre modal */
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .modal h3 {
-  font-size: 18px !important;
-  font-weight: 800 !important;
-  color: #0f172a !important;
-  margin: 0 0 10px 0 !important;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
 }
 
-/* Input mot de passe : fond blanc net, texte sombre, caret visible */
+.modal-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 16px;
+}
+
 .modal-input {
-  width: 100% !important;
-  padding: 12px 14px !important;
-  border-radius: 8px !important;
-  border: 2px solid #d1d5db !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
-  font-size: 16px !important;
-  line-height: 1.2 !important;
-  box-shadow: none !important;
-  caret-color: #0f172a !important; /* IMPORTANT : montre le caret */
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  transition: all 0.2s;
 }
 
-/* Focus visible */
 .modal-input:focus {
-  outline: none !important;
-  border-color: #2563eb !important;
-  box-shadow: 0 8px 30px rgba(37,99,235,0.18) !important;
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Boutons modal */
 .modal-buttons {
-  display: flex !important;
-  gap: 12px !important;
-  justify-content: flex-end !important;
-  margin-top: 12px !important;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
 .modal-btn {
-  padding: 10px 14px !important;
-  border-radius: 8px !important;
-  font-weight: 700 !important;
-  min-width: 96px !important;
-  cursor: pointer !important;
-  border: none !important;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
 }
 
 .modal-btn.primary {
-  background: #2563eb !important;
-  color: #ffffff !important;
-  box-shadow: 0 8px 20px rgba(37,99,235,0.16) !important;
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.modal-btn.primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
 .modal-btn.secondary {
-  background: #e5e7eb !important;
-  color: #0f172a !important;
+  background: white;
+  color: #374151;
+  border-color: #e5e7eb;
 }
 
-/* calendar modal specifics kept smaller */
-.calendar-modal { max-width: 600px !important; }
-
-/* Accessibility */
-.modal input,
-.modal button {
-  -webkit-tap-highlight-color: rgba(0,0,0,0.06);
+.modal-btn.secondary:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
-/* For print: show only clone but keep site's visual template for the table/grid.
-   Also set page to landscape to satisfy user's request. */
-/* Remarque: le bloc @media print a été conçu pour n'imprimer que .print-clone */
+.modal-btn.danger {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+.modal-btn.danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.modal-btn.success {
+  background: #10b981;
+  color: white;
+  border-color: #10b981;
+}
+
+.modal-btn.success:hover {
+  background: #059669;
+  border-color: #059669;
+}
+
+.delete-title {
+  color: #dc2626;
+}
+
+.success-title {
+  color: #10b981;
+}
+
+/* Calendar Modal */
+.calendar-modal {
+  max-width: 400px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-nav-btn {
+  padding: 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.calendar-nav-btn:hover {
+  background: #f9fafb;
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-day:hover {
+  background: #f0f9ff;
+  border-color: #3b82f6;
+}
+
+.calendar-day.other-month {
+  color: #d1d5db;
+  background: #fafafa;
+}
+
+.calendar-day.today {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  font-weight: 700;
+}
+
+.calendar-day.selected {
+  background: #dbeafe;
+  border: 2px solid #3b82f6;
+  font-weight: 700;
+}
+
+/* Vue mensuelle (calendrier) */
+.month-calendar-view {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.month-calendar-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.month-calendar-day-name {
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  background: #47494d;
+  padding: 8px 4px;
+  border-radius: 4px;
+}
+
+.month-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.month-calendar-cell {
+  min-height: 120px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+}
+
+.month-calendar-cell:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.month-calendar-cell.other-month-cell {
+  background: #fafafa;
+  opacity: 0.6;
+}
+
+.month-calendar-cell.today-cell {
+  border: 2px solid #3b82f6;
+  background: #f0f9ff;
+}
+
+.month-calendar-date {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+/* NOUVEAU: Indicateur jour férié dans vue mensuelle */
+.holiday-indicator {
+  margin-left: 4px;
+  font-size: 12px;
+}
+
+.month-calendar-schedules {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.month-schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.month-schedule-item.nd-schedule {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.emp-name-short {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.schedule-time {
+  white-space: nowrap;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .header-title-section h1 {
+    font-size: 32px;
+  }
+  
+  .logo {
+    height: 100px;
+  }
+  
+  .compact-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nav-controls-group {
+    justify-content: center;
+  }
+  
+  .dept-filter-compact {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 12px;
+  }
+  
+  .header-card {
+    padding: 16px;
+  }
+  
+  .header-title-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .header-title-section h1 {
+    font-size: 28px;
+  }
+  
+  .logo {
+    height: 80px;
+  }
+  
+  .schedule-table {
+    font-size: 12px;
+  }
+  
+  .schedule-table thead th,
+  .schedule-table tbody td {
+    padding: 6px 4px;
+  }
+  
+  .month-calendar-cell {
+    min-height: 80px;
+    padding: 4px;
+  }
+  
+  .month-schedule-item {
+    font-size: 9px;
+    padding: 3px 4px;
+  }
+}
+
+/* Styles pour l'impression */
 .print-clone {
   display: none;
   background: white;
@@ -711,7 +1032,6 @@ body {
   margin: 0 auto;
 }
 
-/* Entête minimal pour le clone */
 .print-clone-header {
   text-align: center;
   margin-bottom: 12px;
@@ -729,195 +1049,87 @@ body {
   margin-top: 4px;
 }
 
-/* Remplacement d'inputs/select pour impression */
-.print-replaced-select,
-.print-replaced-input {
-  display: inline-block;
-  padding: 3px 6px;
-  background: transparent;
-  color: #111827;
+/* Utilitaires pour affichage écran/impression */
+.screen-only {
+  display: inline !important;
+}
+
+.print-only {
+  display: none !important;
 }
 
 @media print {
-  /* Masquer tout sauf le clone d'impression (suppression de l'espace/gris de l'entête) */
+  .screen-only {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: inline !important;
+  }
+  
+  th.print-only,
+  td.print-only {
+    display: table-cell !important;
+  }
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Cacher tout sauf le clone d'impression */
   body > *:not(.print-clone) {
     display: none !important;
   }
 
-  .print-clone,
-  .print-clone * {
-    visibility: visible !important;
-  }
-
+  /* Afficher le clone d'impression */
   .print-clone {
     display: block !important;
+    visibility: visible !important;
     position: static !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 12px !important;
+    padding: 10mm !important;
     background: #ffffff !important;
     box-shadow: none !important;
     border: none !important;
-    z-index: auto !important;
-    font-size: 12px !important;
   }
 
-  .print-clone .sticky-col,
-  .print-clone .schedule-table thead th {
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
-    z-index: auto !important;
-    box-shadow: none !important;
+  /* Orientation paysage pour vue hebdomadaire */
+  .print-clone.print-landscape {
+    page: landscape;
   }
 
-  .print-clone .table-container,
-  .print-clone .print-table-container {
-    overflow: visible !important;
-  }
-
-  .print-clone .schedule-table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    -webkit-print-color-adjust: exact !important;
-    table-layout: auto !important;
-  }
-
-  .print-clone .schedule-table tbody td {
-    color: #111827 !important;
-    -webkit-print-color-adjust: exact !important;
-  }
-
-  .print-clone .schedule-table thead th {
-    color: #ffffff !important;
-    background: #47494d !important;
-    -webkit-print-color-adjust: exact !important;
-    text-align: center !important;
-  }
-
-  .print-clone .schedule-table thead th:first-child {
-    text-align: center !important;
-  }
-
-  .print-clone td.emp-name {
-    color: #111827 !important;
-    text-align: left !important;
-    font-weight: 600 !important;
-    padding-left: 12px !important;
-  }
-
-  .print-clone .month-calendar-grid {
-    display: grid !important;
-    grid-template-columns: repeat(7, 1fr) !important;
-    gap: 8px !important;
-  }
-
-  .print-clone .month-calendar-cell { page-break-inside: avoid; }
-
-  .print-clone .month-calendar-day-name {
-    color: #ffffff !important;
-    background: #47494d !important;
-    -webkit-print-color-adjust: exact !important;
-  }
-
-  .print-clone .btn,
-  .print-clone .btn-copy,
-  .print-clone .btn-add-emp,
-  .print-clone .filter-btn,
-  .print-clone .btn-delete,
-  .print-clone .schedule-input,
-  .print-clone .schedule-select,
-  .print-clone .btn-edit-cell,
-  .print-clone .export-print-btn,
-  .print-clone .icon-admin-btn,
-  .print-clone .export-buttons-direct,
-  .print-clone .modal-overlay,
-  .print-clone .modal {
-    display: none !important;
-  }
-
+  /* Page par défaut (portrait pour vue mensuelle) */
   @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  /* Page paysage pour vue hebdomadaire */
+  @page landscape {
     size: A4 landscape;
-    margin: 12mm 10mm !important;
+    margin: 10mm;
   }
 
-  .print-clone .schedule-table thead th,
-  .print-clone .schedule-table tbody td {
-    padding: 6px 8px !important;
+  /* Préserver les couleurs */
+  .print-clone * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Eviter les coupures de page dans les tables */
+  .print-clone table {
+    page-break-inside: avoid !important;
+  }
+
+  .print-clone tr {
+    page-break-inside: avoid !important;
   }
 }
-
-/* small utility for printed table wrapper */
-.print-table-container {
-  overflow: visible;
-  width: 100%;
-}
-
-/* -----------------------
-   Fix temporaire pour résoudre la disparition de la vue mensuelle
-   Ce bloc force l'affichage de la grille mensuelle si elle est masquée par une règle de stacking/context.
-   Gardez pour debug; on pourra affiner ensuite si tout est OK.
-   ----------------------- */
-.month-calendar-view {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  transform: none !important;
-  position: relative !important;
-  z-index: 60 !important; /* doit être au-dessus du header (header z-index=50) */
-}
-
-.month-calendar-header,
-.month-calendar-grid,
-.month-calendar-cell,
-.month-calendar-day-name {
-  display: block !important;
-}
-
-.month-calendar-grid {
-  display: grid !important;
-  grid-template-columns: repeat(7, 1fr) !important;
-  gap: 8px !important;
-}
-
-/* ------------------------------
-   Header compact pour écrans petits
-   ------------------------------ */
-
-/* Tablette / petits laptops */
-@media (max-width: 1024px) {
-  .header-card { padding: 12px !important; }
-  .logo { height: 80px !important; max-height: 80px !important; }
-  .header-title-section h1 { font-size: 28px !important; line-height: 1.05; margin: 0 8px; text-align: center; }
-  .header-title-section, .admin-controls { gap: 8px !important; }
-  .export-buttons-direct .export-label { display: none !important; }
-  .export-buttons-direct .dropdown-select { width: 140px !important; padding: 6px 8px !important; font-size: 13px !important; }
-  .view-mode-btn-absolute { bottom: 12px !important; right: 12px !important; padding: 6px 10px !important; font-size: 12px !important; min-width: 110px !important; }
-  .nav-section { gap: 8px !important; }
-  .dept-header { padding: 12px 16px !important; }
-  .dept-header h3 { font-size: 28px !important; }
-}
-
-/* Mobile étroit : encore plus compact */
-@media (max-width: 640px) {
-  .header-card::before { display: none !important; }
-  .header-card { padding: 8px !important; }
-  .logo { height: 48px !important; display: inline-block !important; }
-  .header-title-section h1 { font-size: 18px !important; font-weight: 700; text-align: center; }
-  .admin-controls { gap: 6px !important; justify-content: flex-end; width: 100%; }
-  .export-buttons-direct .dropdown-select, .export-buttons-direct .export-print-btn { padding: 6px !important; font-size: 12px !important; }
-  .nav-section { gap: 6px !important; }
-  .schedule-table thead th:first-child, .schedule-table tbody td.emp-name {
-    min-width: 110px !important;
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  .schedule-table, .print-clone .schedule-table { font-size: 12px !important; }
-  .filter-label, .filter-btn:not(.active) { display: none !important; }
-}
-
-/* Fin du fichier */
