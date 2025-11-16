@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, Clock, Save, Undo2, Redo2 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Printer, Lock, Unlock, Plus, Trash2, Clock, Save, MessageSquare } from 'lucide-react';
 import { db } from './firebaseConfig';
-import { collection, getDocs, setDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, setDoc, doc, addDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
 import './App.css';
 import logo from './LeMarthelinois.png';
 import './club_house.webp';
@@ -35,10 +35,6 @@ const ScheduleManager = () => {
     { date: '2025-12-25', name: 'Noël' },
   ]);
 
-  // Historique des modifications (undo/redo)
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  
   // Templates d'horaires
   const [templates, setTemplates] = useState([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
@@ -242,11 +238,20 @@ const ScheduleManager = () => {
     }
     
     const days = getWeekDays(currentDate).slice(0, 7);
-    const newSchedules = { ...schedules };
     
     // Utiliser les employés ACTUELS du département (pas ceux du template)
     const currentEmployees = employees[deptName] || [];
     const templateEmployees = selectedTemplate.employees || [];
+    
+    console.log('📋 Application template:', selectedTemplate.name, 'pour', deptName);
+    console.log('🗓️ Semaine:', days[0].toLocaleDateString(), 'au', days[6].toLocaleDateString());
+    
+    // Mettre à jour l'état local avec tous les horaires
+    const newSchedules = { ...schedules };
+    
+    // Préparer les sauvegardes Firebase (seulement cette semaine)
+    const firebaseUpdates = [];
+    const firebaseDeletions = [];
     
     // Appliquer seulement pour ce département
     days.forEach((day, idx) => {
@@ -269,16 +274,37 @@ const ScheduleManager = () => {
           if (scheduleValue === '') {
             // Supprimer l'horaire si le template est vide
             delete newSchedules[key];
+            firebaseDeletions.push(key);
           } else {
             newSchedules[key] = { schedule: scheduleValue };
+            firebaseUpdates.push({ key, value: scheduleValue });
           }
         }
       });
     });
     
+    // Mettre à jour l'état local
     setSchedules(newSchedules);
-    await saveSchedules(newSchedules);
-    // Message de succès géré par saveSchedules
+    
+    // Sauvegarder SEULEMENT les modifications de cette semaine dans Firebase
+    console.log('💾 Sauvegarde:', firebaseUpdates.length, 'horaires +', firebaseDeletions.length, 'suppressions');
+    
+    try {
+      // Supprimer les horaires vides
+      for (const key of firebaseDeletions) {
+        await deleteDoc(doc(db, 'schedules', key));
+      }
+      
+      // Sauvegarder les nouveaux horaires
+      for (const { key, value } of firebaseUpdates) {
+        await setDoc(doc(db, 'schedules', key), { schedule: value });
+      }
+      
+      console.log('✓ Template appliqué avec succès');
+    } catch (error) {
+      console.error('Erreur application template:', error);
+      alert('Erreur lors de l\'application du template: ' + error.message);
+    }
   };
 
   const applyTemplate = async (template) => {
@@ -288,12 +314,20 @@ const ScheduleManager = () => {
     }
     
     const days = getWeekDays(currentDate).slice(0, 7);
-    const newSchedules = { ...schedules };
     const dept = template.department;
     
     // Utiliser les employés ACTUELS du département (pas ceux du template)
     const currentEmployees = employees[dept] || [];
     const templateEmployees = template.employees || [];
+    
+    console.log('📋 Application template:', template.name, 'pour', dept);
+    
+    // Mettre à jour l'état local avec tous les horaires
+    const newSchedules = { ...schedules };
+    
+    // Préparer les sauvegardes Firebase (seulement cette semaine)
+    const firebaseUpdates = [];
+    const firebaseDeletions = [];
     
     days.forEach((day, idx) => {
       currentEmployees.forEach(emp => {
@@ -315,16 +349,37 @@ const ScheduleManager = () => {
           if (scheduleValue === '') {
             // Supprimer l'horaire si le template est vide
             delete newSchedules[key];
+            firebaseDeletions.push(key);
           } else {
             newSchedules[key] = { schedule: scheduleValue };
+            firebaseUpdates.push({ key, value: scheduleValue });
           }
         }
       });
     });
     
+    // Mettre à jour l'état local
     setSchedules(newSchedules);
-    await saveSchedules(newSchedules);
-    // Message de succès géré par saveSchedules
+    
+    // Sauvegarder SEULEMENT les modifications de cette semaine dans Firebase
+    console.log('💾 Sauvegarde:', firebaseUpdates.length, 'horaires +', firebaseDeletions.length, 'suppressions');
+    
+    try {
+      // Supprimer les horaires vides
+      for (const key of firebaseDeletions) {
+        await deleteDoc(doc(db, 'schedules', key));
+      }
+      
+      // Sauvegarder les nouveaux horaires
+      for (const { key, value } of firebaseUpdates) {
+        await setDoc(doc(db, 'schedules', key), { schedule: value });
+      }
+      
+      console.log('✓ Template appliqué avec succès');
+    } catch (error) {
+      console.error('Erreur application template:', error);
+      alert('Erreur lors de l\'application du template: ' + error.message);
+    }
   };
 
   const loadTemplates = async () => {
@@ -357,51 +412,6 @@ const ScheduleManager = () => {
   };
 
   // OPTION 4: Historique et Undo/Redo
-  const addToHistory = (action, data) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push({ action, data, timestamp: Date.now() });
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-    
-    // Sauvegarder dans Firebase
-    saveHistoryEntry({ action, data, timestamp: Date.now() });
-  };
-
-  const saveHistoryEntry = async (entry) => {
-    try {
-      await addDoc(collection(db, 'history'), entry);
-    } catch (error) {
-      console.error('Erreur sauvegarde historique:', error);
-    }
-  };
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      const previousState = history[historyIndex - 1];
-      applyHistoryState(previousState);
-      setHistoryIndex(historyIndex - 1);
-    }
-  };
-
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      const nextState = history[historyIndex + 1];
-      applyHistoryState(nextState);
-      setHistoryIndex(historyIndex + 1);
-    }
-  };
-
-  const applyHistoryState = (state) => {
-    if (state.action === 'updateSchedule') {
-      setSchedules(state.data.schedules);
-    } else if (state.action === 'addEmployee') {
-      setEmployees(state.data.employees);
-    } else if (state.action === 'deleteEmployee') {
-      setEmployees(state.data.employees);
-      setSchedules(state.data.schedules);
-    }
-  };
-
 
   // OPTION 9: Jours fériés
   const isHoliday = (date) => {
@@ -423,9 +433,11 @@ const ScheduleManager = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e, targetDept, targetEmp, targetDay) => {
+  const handleDrop = async (e, targetDept, targetEmp, targetDay) => {
     e.preventDefault();
     if (!isAdmin || !draggedCell) return;
+    
+    console.log('🎯 Drag-drop:', draggedCell.schedule);
     
     // COUPER/COLLER : Déplacer l'horaire de la cellule source vers la cible
     const sourceDateStr = getLocalDateString(draggedCell.day);
@@ -443,11 +455,21 @@ const ScheduleManager = () => {
     delete newSchedules[sourceKey];
     
     setSchedules(newSchedules);
-    saveSchedules(newSchedules);
     setDraggedCell(null);
     
-    // Ajouter à l'historique
-    addToHistory('dragDrop', { schedules: newSchedules });
+    // Sauvegarder SEULEMENT les 2 cellules modifiées
+    try {
+      // Sauvegarder la cible
+      await setDoc(doc(db, 'schedules', targetKey), { schedule: draggedCell.schedule });
+      console.log('✓ Copié vers:', targetKey);
+      
+      // Supprimer la source
+      await deleteDoc(doc(db, 'schedules', sourceKey));
+      console.log('✓ Supprimé:', sourceKey);
+    } catch (error) {
+      console.error('Erreur drag-drop:', error);
+      alert('Erreur lors du déplacement: ' + error.message);
+    }
   };
 
   // ========== FONCTIONS EXISTANTES (modifiées pour intégrer l'historique) ==========
@@ -460,15 +482,30 @@ const ScheduleManager = () => {
   };
 
   useEffect(() => {
-    loadData();
-    loadTemplates();
+    let unsubscribe;
+    
+    const initializeData = async () => {
+      unsubscribe = await loadData();
+      loadTemplates();
+    };
+    
+    initializeData();
+    
+    // Nettoyage : arrêter les listeners quand le composant est démonté
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const days = viewMode === 'month' ? getCalendarDays() : getWeekDays(currentDate);
     setWeekDays(days);
   }, [currentDate, viewMode]);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isAdmin) return;
@@ -477,8 +514,6 @@ const ScheduleManager = () => {
       const isCopy = (e.ctrlKey || e.metaKey) && e.key === 'c';
       const isPaste = (e.ctrlKey || e.metaKey) && e.key === 'v';
       const isDelete = e.key === 'Delete' || e.key === 'Backspace';
-      const isUndo = (e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey;
-      const isRedo = (e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'z';
 
       if (isCopy && selectedCell) {
         e.preventDefault();
@@ -495,21 +530,11 @@ const ScheduleManager = () => {
         e.preventDefault();
         deleteSchedule(selectedCell.dept, selectedCell.emp, selectedCell.day);
       }
-
-      if (isUndo) {
-        e.preventDefault();
-        undo();
-      }
-
-      if (isRedo) {
-        e.preventDefault();
-        redo();
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAdmin, selectedCell, copiedSchedule, schedules, editingCell, historyIndex, history]);
+  }, [isAdmin, selectedCell, copiedSchedule, schedules, editingCell]);
 
   const getWeekDays = (date) => {
     const sunday = new Date(date);
@@ -532,6 +557,7 @@ const ScheduleManager = () => {
     try {
       setLoading(true);
 
+      // Charger les employés une fois au démarrage
       const employeesSnap = await getDocs(collection(db, 'employees'));
       const loadedEmployees = {};
 
@@ -551,14 +577,35 @@ const ScheduleManager = () => {
       }
       setEmployees(loadedEmployees);
 
-      const schedulesSnap = await getDocs(collection(db, 'schedules'));
-      const loadedSchedules = {};
-      schedulesSnap.forEach(docSnap => {
-        loadedSchedules[docSnap.id] = docSnap.data();
+      // Écouter les changements des horaires en temps réel
+      const unsubscribeSchedules = onSnapshot(collection(db, 'schedules'), (snapshot) => {
+        const loadedSchedules = {};
+        snapshot.forEach(docSnap => {
+          loadedSchedules[docSnap.id] = docSnap.data();
+        });
+        setSchedules(loadedSchedules);
+      }, (error) => {
+        console.error('Erreur listener schedules:', error);
       });
-      setSchedules(loadedSchedules);
+
+      // Écouter les changements des employés en temps réel
+      const unsubscribeEmployees = onSnapshot(collection(db, 'employees'), (snapshot) => {
+        const loadedEmployees = {};
+        snapshot.forEach(docSnap => {
+          loadedEmployees[docSnap.id] = docSnap.data().list || [];
+        });
+        setEmployees(loadedEmployees);
+      }, (error) => {
+        console.error('Erreur listener employees:', error);
+      });
 
       setLoading(false);
+
+      // Retourner la fonction de nettoyage pour arrêter les listeners
+      return () => {
+        unsubscribeSchedules();
+        unsubscribeEmployees();
+      };
     } catch (error) {
       console.error('Erreur de chargement:', error);
       setLoading(false);
@@ -578,13 +625,41 @@ const ScheduleManager = () => {
 
   const saveSchedules = async (newSchedules) => {
     try {
-      for (const [key, value] of Object.entries(newSchedules)) {
-        await setDoc(doc(db, 'schedules', key), value);
+      // Obtenir les clés actuelles de Firebase pour détecter les suppressions
+      const currentKeys = Object.keys(schedules);
+      const newKeys = Object.keys(newSchedules);
+      
+      // Détecter les clés supprimées
+      const deletedKeys = currentKeys.filter(key => !newKeys.includes(key));
+      
+      console.log('💾 Sauvegarde en masse:', newKeys.length, 'horaires');
+      
+      // Supprimer les horaires effacés
+      for (const key of deletedKeys) {
+        try {
+          await deleteDoc(doc(db, 'schedules', key));
+        } catch (err) {
+          console.error('Erreur suppression:', key, err);
+        }
       }
+      
+      // Sauvegarder/mettre à jour les horaires
+      for (const [key, value] of Object.entries(newSchedules)) {
+        if (value && value.schedule) {
+          try {
+            await setDoc(doc(db, 'schedules', key), value);
+          } catch (err) {
+            console.error('Erreur sauvegarde:', key, err);
+          }
+        }
+      }
+      
+      console.log('✓ Sauvegarde terminée');
       setShowSaveConfirmation(true);
       setTimeout(() => setShowSaveConfirmation(false), 2000);
     } catch (error) {
       console.error('Erreur sauvegarde horaires:', error);
+      alert('Erreur lors de la sauvegarde: ' + error.message);
     }
   };
 
@@ -626,8 +701,12 @@ const ScheduleManager = () => {
   };
 
   const updateSchedule = (dept, emp, day, value) => {
+    console.log('=== UPDATE SCHEDULE ===');
+    console.log('Dept:', dept, 'Emp:', emp, 'Value:', value);
+    
     const dateStr = getLocalDateString(day);
     const key = `${dept}-${emp}-${dateStr}`;
+    console.log('Clé:', key);
     
     const oldSchedules = { ...schedules };
     const newSchedules = {
@@ -637,12 +716,22 @@ const ScheduleManager = () => {
     
     setSchedules(newSchedules);
     
-    // Ajouter à l'historique
-    addToHistory('updateSchedule', { schedules: newSchedules, previous: oldSchedules });
-    
-    setTimeout(() => {
-      saveSchedules(newSchedules);
-    }, 1000);
+    // Sauvegarder SEULEMENT cet horaire modifié
+    setTimeout(async () => {
+      try {
+        if (value && value.trim() !== '') {
+          await setDoc(doc(db, 'schedules', key), { schedule: value });
+          console.log('✓ Sauvegardé:', key, '=', value);
+        } else {
+          // Si vide, supprimer de Firebase
+          await deleteDoc(doc(db, 'schedules', key));
+          console.log('✓ Supprimé:', key);
+        }
+      } catch (error) {
+        console.error('Erreur sauvegarde:', error);
+        alert('Erreur de sauvegarde: ' + error.message);
+      }
+    }, 500);
   };
 
   const addEmployee = async () => {
@@ -656,9 +745,6 @@ const ScheduleManager = () => {
 
     setEmployees(newEmployees);
     await saveEmployees(newEmployees);
-    
-    // Ajouter à l'historique
-    addToHistory('addEmployee', { employees: newEmployees });
 
     setShowAddEmployee(false);
     setNewEmployeeName('');
@@ -688,10 +774,6 @@ const ScheduleManager = () => {
 
     await saveEmployees(newEmployees);
     await saveSchedules(newSchedules);
-
-    // Ajouter à l'historique
-    addToHistory('deleteEmployee', { employees: newEmployees, schedules: newSchedules });
-
     setShowDeleteConfirm(false);
     setEmployeeToDelete(null);
   };
@@ -1065,11 +1147,12 @@ const ScheduleManager = () => {
                 <button onClick={() => setShowTemplateModal(true)} className="nav-btn-compact" title="Sauvegarder template">
                   <Save size={16} />
                 </button>
-                <button onClick={undo} disabled={historyIndex <= 0} className="nav-btn-compact" title="Annuler (Ctrl+Z)">
-                  <Undo2 size={16} />
-                </button>
-                <button onClick={redo} disabled={historyIndex >= history.length - 1} className="nav-btn-compact" title="Refaire (Ctrl+Shift+Z)">
-                  <Redo2 size={16} />
+                <button 
+                  onClick={() => window.open('https://messages.google.com/web', '_blank')} 
+                  className="nav-btn-compact" 
+                  title="Envoyer SMS via Google Messages"
+                >
+                  <MessageSquare size={16} />
                 </button>
               </div>
             )}
