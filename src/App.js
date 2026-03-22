@@ -1413,9 +1413,9 @@ const ScheduleManager = () => {
               ))}
           </div>
         ) : (
-          // VUE MENSUELLE (inchangée)
+          // VUE MENSUELLE
           <div className="month-calendar-view">
-            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center' }}>
+            <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'center', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <select
                 value={monthViewDept}
                 onChange={(e) => setMonthViewDept(e.target.value)}
@@ -1432,6 +1432,12 @@ const ScheduleManager = () => {
                   <option key={dept} value={dept}>{dept}</option>
                 ))}
               </select>
+              {isAdmin && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#6b7280', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '6px 12px' }}>
+                  <span>✏️</span>
+                  <span>Mode Admin — cliquez sur un quart pour modifier</span>
+                </div>
+              )}
             </div>
 
             <div className="month-calendar-header">
@@ -1445,49 +1451,188 @@ const ScheduleManager = () => {
                 const isCurrentMonth = day.getMonth() === currentDate.getMonth();
                 const isToday = day.toDateString() === new Date().toDateString();
                 const holiday = isHoliday(day);
+                const deptEmployees = employees[monthViewDept] || [];
+                const dateStr = getLocalDateString(day);
+
+                // Trouver les employés assignés à ce jour pour ce département
+                // Quart 1 = premier employé avec un horaire matin
+                // Quart 2 = premier employé avec un horaire après-midi
+                // En mode admin on permet d'éditer 2 quarts indépendants
+                const assignedShifts = deptEmployees
+                  .map(emp => ({ emp, sched: getSchedule(monthViewDept, emp, day) }))
+                  .filter(({ sched }) => sched.schedule);
+
+                // Séparer matin / après-midi
+                const morningShifts = assignedShifts.filter(({ sched }) => getShiftType(sched.schedule) === 'morning' || sched.schedule === 'N/D');
+                const afternoonShifts = assignedShifts.filter(({ sched }) => getShiftType(sched.schedule) === 'afternoon');
+
+                // Presets du département
+                const presets = departmentPresets[monthViewDept] || [];
+                const morningPresets = presets.filter(p => {
+                  const match = p.match(/^(\d{1,2})h/);
+                  return match && parseInt(match[1]) < 12;
+                });
+                const afternoonPresets = presets.filter(p => {
+                  const match = p.match(/^(\d{1,2})h/);
+                  return match && parseInt(match[1]) >= 12;
+                });
+
+                const renderShiftBadge = ({ emp, sched }) => {
+                  const shiftType = getShiftType(sched.schedule);
+                  let bgColor, textColor;
+                  if (shiftType === 'nd') { bgColor = '#fecaca'; textColor = '#991b1b'; }
+                  else if (shiftType === 'morning') { bgColor = '#dbeafe'; textColor = '#1e40af'; }
+                  else if (shiftType === 'afternoon') { bgColor = '#fef08a'; textColor = '#854d0e'; }
+                  else { bgColor = '#e5e7eb'; textColor = '#6b7280'; }
+
+                  return (
+                    <div key={emp} className="month-schedule-item" style={{ background: bgColor, color: textColor }}>
+                      <span className="emp-name-short">{emp.split(' ')[0]}</span>
+                      <span className="schedule-time">{sched.schedule}</span>
+                    </div>
+                  );
+                };
+
+                const MonthAdminShiftRow = ({ shiftLabel, shiftColor, existingShifts, availablePresets, isAfternoon }) => {
+                  // Trouver l'employé actuel pour ce quart (prendre le premier)
+                  const currentShift = existingShifts[0];
+                  const currentEmp = currentShift ? currentShift.emp : '';
+                  const currentSched = currentShift ? currentShift.sched.schedule : '';
+
+                  return (
+                    <div style={{
+                      border: `1px solid ${shiftColor}33`,
+                      borderRadius: '4px',
+                      padding: '3px',
+                      marginBottom: '2px',
+                      background: `${shiftColor}11`
+                    }}>
+                      <div style={{ fontSize: '9px', fontWeight: '600', color: shiftColor, marginBottom: '2px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                        {shiftLabel}
+                      </div>
+                      {/* Menu employé */}
+                      <select
+                        value={currentEmp}
+                        onChange={(e) => {
+                          const newEmp = e.target.value;
+                          // Si on change d'employé, on efface l'ancien et assigne le même horaire au nouvel employé
+                          if (currentEmp && currentEmp !== newEmp) {
+                            updateSchedule(monthViewDept, currentEmp, day, '');
+                          }
+                          if (newEmp && currentSched) {
+                            updateSchedule(monthViewDept, newEmp, day, currentSched);
+                          } else if (newEmp && availablePresets.length > 0) {
+                            updateSchedule(monthViewDept, newEmp, day, availablePresets[0]);
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          width: '100%',
+                          fontSize: '10px',
+                          padding: '1px 2px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '3px',
+                          background: 'white',
+                          marginBottom: '2px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="">-- Employé --</option>
+                        {deptEmployees.map(emp => (
+                          <option key={emp} value={emp}>{emp.split(' ')[0]} {emp.split(' ')[1]?.[0] || ''}.</option>
+                        ))}
+                      </select>
+                      {/* Menu heures */}
+                      <select
+                        value={currentSched}
+                        onChange={(e) => {
+                          const newSched = e.target.value;
+                          if (currentEmp) {
+                            updateSchedule(monthViewDept, currentEmp, day, newSched);
+                          }
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={!currentEmp}
+                        style={{
+                          width: '100%',
+                          fontSize: '10px',
+                          padding: '1px 2px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '3px',
+                          background: currentEmp ? 'white' : '#f9fafb',
+                          cursor: currentEmp ? 'pointer' : 'not-allowed',
+                          opacity: currentEmp ? 1 : 0.6
+                        }}
+                      >
+                        <option value="">-- Horaire --</option>
+                        <option value="N/D">N/D</option>
+                        {availablePresets.map((p, i) => (
+                          <option key={i} value={p}>{p}</option>
+                        ))}
+                        {currentSched && currentSched !== 'N/D' && !availablePresets.includes(currentSched) && (
+                          <option value={currentSched}>{currentSched}</option>
+                        )}
+                      </select>
+                      {/* Bouton supprimer si assigné */}
+                      {currentEmp && currentSched && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            updateSchedule(monthViewDept, currentEmp, day, '');
+                          }}
+                          style={{
+                            marginTop: '2px',
+                            width: '100%',
+                            fontSize: '9px',
+                            padding: '1px',
+                            background: '#fee2e2',
+                            color: '#dc2626',
+                            border: '1px solid #fca5a5',
+                            borderRadius: '3px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🗑 Effacer
+                        </button>
+                      )}
+                    </div>
+                  );
+                };
 
                 return (
                   <div
                     key={idx}
-                    className={`month-calendar-cell ${!isCurrentMonth ? 'other-month-cell' : ''} ${isToday ? 'today-cell' : ''}`}
+                    className={`month-calendar-cell ${!isCurrentMonth ? 'other-month-cell' : ''} ${isToday ? 'today-cell' : ''} ${isAdmin && isCurrentMonth ? 'admin-cell' : ''}`}
                   >
                     <div className="month-calendar-date">
                       {day.getDate()}
                       {holiday && <span className="holiday-indicator" title={holiday.name}>🎉</span>}
                     </div>
-                    <div className="month-calendar-schedules">
-                      {(employees[monthViewDept] || []).map(emp => {
-                        const sched = getSchedule(monthViewDept, emp, day);
-                        if (!sched.schedule) return null;
 
-                        const shiftType = getShiftType(sched.schedule);
-                        let bgColor, textColor;
-                        if (shiftType === 'nd') {
-                          bgColor = '#fecaca'; // Rouge pour N/D
-                          textColor = '#991b1b';
-                        } else if (shiftType === 'morning') {
-                          bgColor = '#dbeafe'; // Bleu pour matin
-                          textColor = '#1e40af';
-                        } else if (shiftType === 'afternoon') {
-                          bgColor = '#fef08a'; // Jaune pour après-midi
-                          textColor = '#854d0e';
-                        } else {
-                          bgColor = '#e5e7eb';
-                          textColor = '#6b7280';
-                        }
-
-                        return (
-                          <div
-                            key={emp}
-                            className="month-schedule-item"
-                            style={{ background: bgColor, color: textColor }}
-                          >
-                            <span className="emp-name-short">{emp.split(' ')[0]}</span>
-                            <span className="schedule-time">{sched.schedule}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    {isAdmin && isCurrentMonth ? (
+                      // MODE ADMIN : 2 quarts éditables
+                      <div className="month-calendar-schedules" style={{ gap: '2px' }}>
+                        <MonthAdminShiftRow
+                          shiftLabel="Matin"
+                          shiftColor="#1e40af"
+                          existingShifts={morningShifts}
+                          availablePresets={morningPresets.length > 0 ? morningPresets : presets}
+                          isAfternoon={false}
+                        />
+                        <MonthAdminShiftRow
+                          shiftLabel="Après-midi"
+                          shiftColor="#854d0e"
+                          existingShifts={afternoonShifts}
+                          availablePresets={afternoonPresets.length > 0 ? afternoonPresets : presets}
+                          isAfternoon={true}
+                        />
+                      </div>
+                    ) : (
+                      // MODE LECTURE : affichage normal
+                      <div className="month-calendar-schedules">
+                        {assignedShifts.map(renderShiftBadge)}
+                      </div>
+                    )}
                   </div>
                 );
               })}

@@ -890,6 +890,11 @@ body {
   transition: all 0.2s;
 }
 
+/* En mode admin, les cellules ont besoin de plus de hauteur pour les menus */
+.month-calendar-cell.admin-cell {
+  min-height: 200px;
+}
+
 .month-calendar-cell:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
